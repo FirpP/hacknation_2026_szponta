@@ -1,7 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import MainLayout from "@/components/layouts/MainLayout";
 import RequireAuth from "@/features/auth/RequireAuth";
-import About from "@/pages/About";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/NotFound";
@@ -12,7 +11,6 @@ const App = () => {
     <Routes>
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login />} />
 
         {/* Strony wymagające zalogowania */}

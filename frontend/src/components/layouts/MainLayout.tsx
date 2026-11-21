@@ -13,7 +13,6 @@ const MainLayout = () => {
     <>
       <nav className="navbar">
         <NavLink to="/">Home</NavLink>
-        <NavLink to="/about">About</NavLink>
         <NavLink to="/panel">Panel</NavLink>
         <div className="navbar__right">
           {me ? (
