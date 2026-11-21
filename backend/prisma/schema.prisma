@@ -15,3 +15,111 @@ model Employee {
   passwordHash String
   createdAt    DateTime @default(now())
 }
+
+// ===================== Radar Innowacji =====================
+// Pipeline: scraper -> RawRecord (surowe dane) -> analiza LLM -> InnovationCard (karta dla strony).
+
+enum RunStatus {
+  RUNNING
+  SUCCESS
+  PARTIAL // część rekordów pobrana, potem błąd
+  FAILED
+  SKIPPED // źródło świadomie pominięte (robots.txt, brak kluczy, TODO(verify))
+}
+
+enum AnalysisStatus {
+  PENDING
+  DONE
+  FAILED
+}
+
+enum ImplementationStatus {
+  CONCEPT
+  PROTOTYPE
+  TESTING
+  PILOT
+  IN_USE
+  UNKNOWN
+}
+
+enum InnovationDomain {
+  TECHNOLOGICAL
+  EDUCATIONAL
+  ADMINISTRATIVE
+  OTHER
+}
+
+/// Jedno uruchomienie scrapera dla jednego źródła
+model ScrapeRun {
+  id           Int         @id @default(autoincrement())
+  source       String
+  startedAt    DateTime    @default(now())
+  finishedAt   DateTime?
+  status       RunStatus   @default(RUNNING)
+  itemsFetched Int         @default(0)
+  itemsNew     Int         @default(0)
+  itemsChanged Int         @default(0)
+  error        String?
+  records      RawRecord[]
+
+  @@index([source, startedAt])
+}
+
+/// Surowy rekord ze źródła, bez interpretacji. Unikalny po (source, externalId).
+model RawRecord {
+  id               Int             @id @default(autoincrement())
+  source           String
+  externalId       String
+  url              String
+  payloadType      String // html | xml | json
+  rawPayload       String
+  contentHash      String // sha256 payloadu; zmiana => ponowna analiza
+  firstSeenAt      DateTime        @default(now())
+  fetchedAt        DateTime        @default(now())
+  runId            Int
+  run              ScrapeRun       @relation(fields: [runId], references: [id])
+  analysisStatus   AnalysisStatus  @default(PENDING)
+  analysisError    String?
+  analysisAttempts Int             @default(0)
+  failedHash       String? // hash, dla którego analiza się nie udała (nie ponawiamy bez --retry-failed)
+  card             InnovationCard?
+
+  @@unique([source, externalId])
+  @@index([analysisStatus])
+  @@index([runId])
+}
+
+/// Karta innowacji wygenerowana przez LLM (lub seed demo) z jednego RawRecord
+model InnovationCard {
+  id                            Int                  @id @default(autoincrement())
+  rawRecordId                   Int                  @unique
+  rawRecord                     RawRecord            @relation(fields: [rawRecordId], references: [id], onDelete: Cascade)
+  rawContentHash                String // hash rekordu, z którego powstała karta
+  title                         String
+  description                   String
+  applicationArea               String?
+  domain                        InnovationDomain
+  isInnovation                  Boolean? // wg Oslo Manual 2018 (zawsze szacunek)
+  isInnovationRationale         String?
+  sourceUrl                     String
+  sourceName                    String
+  implementationStatus          ImplementationStatus
+  trl                           Int? // 1-9 lub null
+  innovationScore               Int // 1-5
+  innovationRationale           String
+  applicationPotentialScore     Int // 1-5
+  applicationPotentialRationale String
+  credibilityScore              Int // 1-5
+  credibilityRationale          String
+  evidence                      Json // [{ field, quote, verified }]
+  fieldBasis                    Json // { [pole]: "CONFIRMED" | "ESTIMATED" }
+  analyzedAt                    DateTime             @default(now())
+  model                         String
+  promptVersion                 String
+
+  @@index([implementationStatus])
+  @@index([trl])
+  @@index([sourceName])
+  @@index([domain])
+  @@index([analyzedAt])
+}
