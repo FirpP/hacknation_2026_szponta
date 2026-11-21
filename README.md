@@ -39,7 +39,7 @@ bun run dev:db:snapshot      # kopia bazy do backend/data/dev-snapshot.db (do ot
 
 **Baza dev leży w wolumenie Dockera** (`/app/backend/data/dev.db` w kontenerze), a nie w katalogu repo. **Nie otwieraj jej z hosta na żywo.** Przy Docker Desktop kontener działa w VM, a SQLite w trybie WAL wymaga pamięci współdzielonej i blokad plików między wszystkimi procesami. Podgląd z hosta (np. rozszerzenie SQLite w VS Code) widziałby wtedy stare dane i mógłby cofnąć zapisy aplikacji. Do przeglądania służy Prisma Studio uruchamiane w kontenerze albo migawka. Zmiany w migawce nie wracają do bazy.
 
-Na świeżym klonie wystarczy `docker compose --profile dev up --build`, bo przy każdym starcie backend sam generuje klienta Prisma i stosuje istniejące migracje. Ręcznie potrzebny jest tylko seed. Uwaga: seed **czyści tabelę users** przed wstawieniem danych (na produkcji odmawia działania). Tworzy też konto pracownika: z `SEED_EMPLOYEE_USERNAME`/`SEED_EMPLOYEE_PASSWORD` z `.env`, a bez nich **`admin`/`admin`**. Ponowny seed tylko aktualizuje hasło. Logowanie: http://localhost:8080/login, potem `/panel` (lista, dodawanie i usuwanie użytkowników).
+Na świeżym klonie wystarczy `docker compose --profile dev up --build`, bo przy każdym starcie backend sam generuje klienta Prisma i stosuje istniejące migracje. Ręcznie potrzebny jest tylko seed. Uwaga: seed jest tylko developerski (na produkcji odmawia działania). Tworzy konto pracownika: z `SEED_EMPLOYEE_USERNAME`/`SEED_EMPLOYEE_PASSWORD` z `.env`, a bez nich **`admin`/`admin`**. Ponowny seed tylko aktualizuje hasło. Logowanie: http://localhost:8080/login, potem `/panel`.
 
 ### Nowy moduł API
 
@@ -48,7 +48,7 @@ bun run new:module products              # model Product (liczba pojedyncza zgad
 bun run new:module people --model Person # nazwa modelu podana wprost
 ```
 
-Generuje `backend/src/api/<nazwa>/` na wzór modułu `users` (GET lista i po id publicznie, POST i DELETE za `requireAuth`, docs, test serwisu), rejestruje router w `src/api/api.ts` i dopisuje model (`id`, `name`, `createdAt`) do `prisma/schema.prisma`. Potem dostosuj pola, uruchom `bun run dev:prisma:migrate` i `bun run gen:api`.
+Generuje `backend/src/api/<nazwa>/` (GET lista i po id publicznie, POST i DELETE za `requireAuth`, docs, test serwisu), rejestruje router w `src/api/api.ts` i dopisuje model (`id`, `name`, `createdAt`) do `prisma/schema.prisma`. Potem dostosuj pola, uruchom `bun run dev:prisma:migrate` i `bun run gen:api`.
 
 Błędy Prismy nie wymagają obsługi w serwisach: `errorHandler` zamienia duplikat pola `@unique` (P2002) na 409 `CONFLICT` z polem w `details`, a brak rekordu przy update/delete (P2025) na 404.
 
@@ -85,7 +85,7 @@ Produkcja to profil `prod`: Nginx na porcie 80 serwuje zbudowany frontend i prze
    ```sh
    bun run prod:employee
    ```
-   Skrypt to `backend/prisma/seed-employee.ts`: tworzy tylko konto z `SEED_EMPLOYEE_USERNAME` i `SEED_EMPLOYEE_PASSWORD` (bez tych zmiennych kończy się błędem) i nie dotyka tabeli users. Bez Buna na serwerze: `docker compose --profile prod exec backend bun prisma/seed-employee.ts`. Dane przykładowe (`prisma db seed`) są tylko na dev, bo czyszczą tabelę users.
+   Skrypt to `backend/prisma/seed-employee.ts`: tworzy tylko konto z `SEED_EMPLOYEE_USERNAME` i `SEED_EMPLOYEE_PASSWORD` (bez tych zmiennych kończy się błędem) i nie dotyka innych danych. Bez Buna na serwerze: `docker compose --profile prod exec backend bun prisma/seed-employee.ts`. Dane przykładowe (`prisma db seed`) są tylko na dev.
 6. Firewall:
    ```sh
    ufw allow OpenSSH && ufw allow 80 && ufw enable
@@ -116,11 +116,11 @@ Tylko w developmencie (`NODE_ENV` inne niż `production`):
 
 Spec generuje się ze schematów zod. Trasa bez opisu nie pojawia się w dokumentacji. Żeby dodać nową:
 
-1. W module utwórz/rozszerz `docs/<moduł>.docs.ts` i opisz trasę przez `describeRoute` (wzór: `backend/src/api/users/docs/users.docs.ts`).
+1. W module utwórz/rozszerz `docs/<moduł>.docs.ts` i opisz trasę przez `describeRoute` (wzór: `backend/src/api/auth/docs/auth.docs.ts`).
 2. Schemat odpowiedzi podaj przez `resolver(...)`. Schemat z `.meta({ ref: "Nazwa" })` trafi do `components.schemas`.
-3. Dodaj opis jako middleware w routerze: `router.get("/", getUsersDocs, handler)`.
+3. Dodaj opis jako middleware w routerze: `router.post("/logout", logoutDocs, handler)`.
 
-Typy (`User`, `Employee`) wynikają ze schematów zod (`z.infer` w `types/`), więc schemat jest jedynym źródłem prawdy dla specu i kodu. Format błędów (`{ error: { code, message, details? } }`) jest opisany w `ErrorResponseSchema` i przetestowany w `backend/src/middleware/error-handler.test.ts`.
+Typy (`Employee`, `LoginBody`) wynikają ze schematów zod (`z.infer` w `types/`), więc schemat jest jedynym źródłem prawdy dla specu i kodu. Format błędów (`{ error: { code, message, details? } }`) jest opisany w `ErrorResponseSchema` i przetestowany w `backend/src/middleware/error-handler.test.ts`.
 
 ### Typy API na froncie
 
@@ -130,11 +130,11 @@ Frontend nie przepisuje typów ręcznie, tylko generuje je ze speca OpenAPI do `
 bun run gen:api   # pobiera http://localhost:3000/api/v1/openapi.json
 ```
 
-Użycie: `type User = components["schemas"]["User"]` (wzór: `frontend/src/lib/types/user.types.ts`). Do `components.schemas` trafiają tylko schematy z `.meta({ ref: "Nazwa" })`.
+Użycie: `type Employee = components["schemas"]["Employee"]` (wzór: `frontend/src/lib/types/auth.types.ts`). Do `components.schemas` trafiają tylko schematy z `.meta({ ref: "Nazwa" })`.
 
 ## Frontend: wzorce
 
-- **Zapytania** idą przez `api` z `src/lib/api-client.ts` (JSON albo `FormData` przy uploadzie, cookie sesji, błędy jako `ApiError` z `status`, `code` i `details`). Hooki TanStack Query trzymaj w `src/features/<nazwa>/` razem z fabryką kluczy (wzór: `features/users/users.hooks.ts`: `useUsers`, `useCreateUser`, `useDeleteUser`).
+- **Zapytania** idą przez `api` z `src/lib/api-client.ts` (JSON albo `FormData` przy uploadzie, cookie sesji, błędy jako `ApiError` z `status`, `code` i `details`). Hooki TanStack Query trzymaj w `src/features/<nazwa>/` razem z fabryką kluczy (wzór: `features/auth/auth.hooks.ts`: `useMe`, `useLogin`, `useLogout`).
 - **Auth:** `useMe()` zwraca zalogowanego pracownika albo `null`, a `useLogin()` i `useLogout()` to mutacje (`features/auth/auth.hooks.ts`). Strony chronione wkładasz pod `<Route element={<RequireAuth />}>` w `App.tsx`. Bez sesji następuje przekierowanie na `/login` i powrót po zalogowaniu. 401 z dowolnego zapytania czyści sesję w cache, więc `RequireAuth` odsyła na logowanie.
-- **Formularze:** `<Input label name error={fieldError(mutation.error, "email")} />` pokazuje błąd pola z 422/409, a `<FormError error={mutation.error} />` komunikat ogólny (wzór: `pages/Panel.tsx`).
+- **Formularze:** `<Input label name error={fieldError(mutation.error, "email")} />` pokazuje błąd pola z 422/409, a `<FormError error={mutation.error} />` komunikat ogólny (wzór: `pages/Login.tsx`).
 - `ErrorBoundary` zamiast białego ekranu przy błędzie renderu, React Query Devtools (ikonka w rogu) tylko w dev.

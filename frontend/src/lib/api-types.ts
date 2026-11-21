@@ -4,42 +4,6 @@
  */
 
 export interface paths {
-    "/users": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Lista użytkowników */
-        get: operations["getUsers"];
-        put?: never;
-        /** Dodaj użytkownika (wymaga zalogowania) */
-        post: operations["postUsers"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/users/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Pobierz użytkownika po ID */
-        get: operations["getUsersById"];
-        put?: never;
-        post?: never;
-        /** Usuń użytkownika (wymaga zalogowania) */
-        delete: operations["deleteUsersById"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/auth/login": {
         parameters: {
             query?: never;
@@ -95,13 +59,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** @description Obiekt reprezentujący użytkownika */
-        User: {
-            id: components["schemas"]["ValidUserId"];
-            name: string;
-            /** Format: email */
-            email: string;
-        };
         ErrorResponse: {
             error: {
                 code: string;
@@ -111,17 +68,6 @@ export interface components {
                     message: string;
                 }[];
             };
-        };
-        /**
-         * Format: uuid
-         * @description UUID użytkownika
-         */
-        ValidUserId: string;
-        /** @description Dane nowego użytkownika */
-        CreateUserBody: {
-            name: string;
-            /** Format: email */
-            email: string;
         };
         /** @description Dane logowania pracownika */
         LoginBody: {
@@ -136,254 +82,13 @@ export interface components {
         };
     };
     responses: never;
-    parameters: {
-        /** @description UUID użytkownika */
-        GetUserIdParams: components["schemas"]["ValidUserId"];
-    };
+    parameters: never;
     requestBodies: never;
     headers: never;
     pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    getUsers: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Lista wszystkich użytkowników */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["User"][];
-                };
-            };
-            /** @description Nieoczekiwany błąd serwera */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    postUsers: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateUserBody"];
-            };
-        };
-        responses: {
-            /** @description Utworzony użytkownik */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["User"];
-                };
-            };
-            /** @description Validation Error */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {boolean} */
-                        success: false;
-                        error: unknown[];
-                        data: unknown;
-                    };
-                };
-            };
-            /** @description Brak lub niepoprawna sesja */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Nazwa lub email są już zajęte */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Niepoprawne dane wejściowe */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Nieoczekiwany błąd serwera */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    getUsersById: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description UUID użytkownika */
-                id: components["parameters"]["GetUserIdParams"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Szczegóły użytkownika */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["User"];
-                };
-            };
-            /** @description Validation Error */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {boolean} */
-                        success: false;
-                        error: unknown[];
-                        data: unknown;
-                    };
-                };
-            };
-            /** @description Użytkownik nie został znaleziony */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Niepoprawne ID (nie jest UUID) */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Nieoczekiwany błąd serwera */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    deleteUsersById: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description UUID użytkownika */
-                id: components["parameters"]["GetUserIdParams"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Użytkownik usunięty */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {boolean} */
-                        success: false;
-                        error: unknown[];
-                        data: unknown;
-                    };
-                };
-            };
-            /** @description Brak lub niepoprawna sesja */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Użytkownik nie został znaleziony */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Niepoprawne ID (nie jest UUID) */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Nieoczekiwany błąd serwera */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
     postAuthLogin: {
         parameters: {
             query?: never;

@@ -1,5 +1,5 @@
 /**
- * Generator modułu API na wzór src/api/users (routes, controller, service + test, repository, validator, docs, types).
+ * Generator modułu API (routes, controller, service + test, repository, validator, docs, types).
  * Dopisuje router do src/api/api.ts i model do prisma/schema.prisma (id, name, createdAt).
  *
  * Użycie (z katalogu głównego):  bun run new:module <nazwa-w-liczbie-mnogiej> [--model NazwaModelu]
