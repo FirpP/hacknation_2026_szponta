@@ -22,7 +22,7 @@ const envSchema = z.object({
   LLM_API_KEY: z.string().min(1).optional(),
   LLM_MODEL: z.string().min(1).optional(),
   LLM_CONCURRENCY: z.preprocess((v) => parseInt(String(v ?? "2"), 10), z.number().int().min(1).max(10)),
-  LLM_MAX_OUTPUT_TOKENS: z.preprocess((v) => parseInt(String(v ?? "8000"), 10), z.number().int().min(500)),
+  LLM_MAX_OUTPUT_TOKENS: z.preprocess((v) => parseInt(String(v ?? "16000"), 10), z.number().int().min(500)),
   LLM_MAX_INPUT_CHARS: z.preprocess((v) => parseInt(String(v ?? "12000"), 10), z.number().int().min(1000)),
   EPO_OPS_KEY: z.string().min(1).optional(),
   EPO_OPS_SECRET: z.string().min(1).optional(),

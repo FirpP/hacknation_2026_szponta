@@ -1,5 +1,5 @@
 /** Zmieniaj przy każdej zmianie promptu: zapisywane na karcie, co pozwala porównać i ponowić analizę */
-export const PROMPT_VERSION = "card-v1";
+export const PROMPT_VERSION = "card-v2";
 
 export const SYSTEM_PROMPT = `Jesteś analitykiem Radaru Innowacji (Podkarpackie Centrum Innowacji). Dostajesz JEDEN surowy rekord
 z publicznego polskiego źródła (strona projektu, patent, publikacja, katalog) i tworzysz z niego kartę innowacji.
@@ -12,7 +12,9 @@ ADMINISTRATIVE (usprawnienia administracji publicznej, samorządów, instytucji 
 ZASADY (bezwzględne):
 1. Nie zmyślaj. Korzystaj wyłącznie z treści rekordu. Brak danych => null albo "UNKNOWN".
 2. Każdy fakt podany w polach title, description, applicationArea, domain, implementationStatus musi mieć cytat w "evidence".
-   Cytat kopiuj DOSŁOWNIE z rekordu (bez poprawiania pisowni, maks. ok. 200 znaków). Cytaty są automatycznie sprawdzane.
+   Cytat kopiuj DOSŁOWNIE z rekordu (bez poprawiania pisowni, maks. ok. 200 znaków). Cytaty są automatycznie sprawdzane;
+   przy sprawdzaniu spacje, podziały linii i wielkość liter są ujednolicane, więc cytat może łączyć sąsiednie linie
+   (np. "Konkurs LIDER VI"). Podaj 1-2 cytaty na pole, nie więcej, i nie zastanawiaj się długo nad ich wyborem.
 3. "fieldBasis": dla każdego pola wpisz "CONFIRMED", gdy wartość wynika wprost z rekordu i ma dosłowny cytat,
    albo "ESTIMATED", gdy to Twoje wnioskowanie. TRL i oceny 1-5 są zawsze "ESTIMATED", chyba że rekord wprost je podaje.
 4. implementationStatus: CONCEPT (pomysł, badania podstawowe), PROTOTYPE (prototyp, demonstrator), TESTING (testy, walidacja),
