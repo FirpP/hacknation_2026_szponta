@@ -1,3 +1,4 @@
+import { seedCounties } from "./seed-counties.js";
 import { seedEmployee } from "./seed-employee.js";
 
 // Seed jest tylko developerski. Na produkcji: bun run prod:employee
@@ -12,6 +13,7 @@ const DEV_EMPLOYEE = { username: "admin", password: "admin" };
 const main = async () => {
   console.log("Seeding database...");
   await seedEmployee(DEV_EMPLOYEE);
+  await seedCounties();
 };
 
 main()

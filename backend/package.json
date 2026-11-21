@@ -15,6 +15,8 @@
     "dev:db:snapshot": "sh scripts/db-snapshot.sh dev",
     "prod:db:snapshot": "sh scripts/db-snapshot.sh prod",
     "prod:employee": "docker compose --profile prod exec backend bun prisma/seed/seed-employee.ts",
+    "prod:counties": "docker compose --profile prod exec backend bun prisma/seed/seed-counties.ts",
+    "dev:counties": "docker compose --profile dev exec backend-dev bun prisma/seed/seed-counties.ts",
     "new:module": "bun scripts/new-module.ts",
     "check:circular": "dpdm --circular --no-warning --no-tree --exclude 'prisma/generated' --exit-code circular:1 src/index.ts"
   },
