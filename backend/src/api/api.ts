@@ -5,6 +5,7 @@ import { ENV } from "@lib/constants/env";
 
 import authRouter from "@api/auth/routes/auth.routes";
 import panelRouter from "@api/panel/routes/panel.routes";
+import formRouter from "@api/form/routes/form.routes";
 import countiesRouter from "@api/counties/routes/counties.routes";
 
 // /api/v1
@@ -12,6 +13,7 @@ export const router = new Hono();
 
 router.route("/auth", authRouter);
 router.route("/panel", panelRouter);
+router.route("/form", formRouter);
 router.route("/counties", countiesRouter);
 
 // Swagger tylko w developmencie - /api/v1/docs (UI) i /api/v1/openapi.json (spec)
