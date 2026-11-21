@@ -1,0 +1,26 @@
+{
+  "name": "hacknation-template",
+  "private": true,
+  "description": "Skrypty pomocnicze. Backend i frontend to osobne pakiety (własne package.json i bun.lock).",
+  "scripts": {
+    "install:all": "bun --cwd=backend install && bun --cwd=frontend install",
+    "lint": "bun --cwd=backend run lint && bun --cwd=frontend run lint",
+    "format": "bun --cwd=backend run format && bun --cwd=frontend run format",
+    "format:check": "bun --cwd=backend run format:check && bun --cwd=frontend run format:check",
+    "typecheck": "bun --cwd=backend run typecheck && bun --cwd=frontend run typecheck",
+    "test:backend": "bun --cwd=backend run test",
+    "check:circular": "bun --cwd=backend run check:circular",
+    "check": "bun run typecheck && bun run lint && bun run format:check && bun run test:backend && bun run check:circular",
+    "gen:api": "bun --cwd=frontend run gen:api",
+    "new:module": "bun --cwd=backend run new:module",
+    "dev:prisma:generate": "bun --cwd=backend run dev:prisma:generate",
+    "dev:prisma:migrate": "bun --cwd=backend run dev:prisma:migrate",
+    "dev:prisma:seed": "bun --cwd=backend run dev:prisma:seed",
+    "dev:prisma:studio": "bun --cwd=backend run dev:prisma:studio",
+    "dev:db:snapshot": "bun --cwd=backend run dev:db:snapshot",
+    "prod:employee": "bun --cwd=backend run prod:employee",
+    "prod:db:snapshot": "bun --cwd=backend run prod:db:snapshot",
+    "docker:dev": "docker compose --profile dev up --build",
+    "docker:prod": "docker compose --profile prod up -d --build"
+  }
+}

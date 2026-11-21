@@ -1,0 +1,11 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "[json]": {
+    "prettier.trailingComma": "none"
+  },
+  "[jsonc]": {
+    "prettier.trailingComma": "none"
+  },
+  "bun.test.customScript": "bun test --env-file=backend/.env.test"
+}

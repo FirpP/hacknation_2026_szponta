@@ -1,0 +1,8 @@
+node_modules
+dist
+.env
+.env.*
+backend/prisma/generated
+backend/prisma/migrations
+backend/data
+frontend/src/lib/api-types.ts

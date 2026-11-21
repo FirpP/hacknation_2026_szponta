@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    // ===== BUN SPECIFIC =====
+    "target": "esnext",
+    "module": "esnext",
+    "lib": ["esnext"],
+    "types": ["bun"],
+
+    // ===== OUTPUT =====
+    "outDir": "./dist",
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    // ===== STRICT CHECKING =====
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true, // example: _req is skipped
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
+
+    // ===== MODULE RESOLUTION =====
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+
+    // ===== PATH ALIASES =====
+    // Ścieżki względem tsconfig.json (bez baseUrl, który jest deprecated od TS 6)
+    "paths": {
+      "@/*": ["./src/*"],
+      "@api/*": ["./src/api/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@middleware/*": ["./src/middleware/*"]
+    }
+  },
+
+  "include": ["src/**/*", "scripts/**/*.ts", "prisma.config.ts", "prisma/seed.ts", "prisma/seed-employee.ts"],
+  "exclude": ["dist", "node_modules", ".next"]
+}
