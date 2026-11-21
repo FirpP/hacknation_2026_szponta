@@ -46,7 +46,7 @@ export const seedEmployee = async (fallback?: Credentials): Promise<boolean> => 
   return true;
 };
 
-// Osobne uruchomienie (np. na produkcji, gdzie nie chcemy danych przykładowych): bun prisma/seed-employee.ts
+// Osobne uruchomienie (np. na produkcji, gdzie nie chcemy danych przykładowych): bun prisma/seed/seed-employee.ts
 if (import.meta.main) {
   seedEmployee()
     .then((created) => {

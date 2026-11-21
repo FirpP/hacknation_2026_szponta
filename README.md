@@ -85,7 +85,7 @@ Produkcja to profil `prod`: Nginx na porcie 80 serwuje zbudowany frontend i prze
    ```sh
    bun run prod:employee
    ```
-   Skrypt to `backend/prisma/seed-employee.ts`: tworzy tylko konto z `SEED_EMPLOYEE_USERNAME` i `SEED_EMPLOYEE_PASSWORD` (bez tych zmiennych kończy się błędem) i nie dotyka innych danych. Bez Buna na serwerze: `docker compose --profile prod exec backend bun prisma/seed-employee.ts`. Dane przykładowe (`prisma db seed`) są tylko na dev.
+   Skrypt to `backend/prisma/seed/seed-employee.ts`: tworzy tylko konto z `SEED_EMPLOYEE_USERNAME` i `SEED_EMPLOYEE_PASSWORD` (bez tych zmiennych kończy się błędem) i nie dotyka innych danych. Bez Buna na serwerze: `docker compose --profile prod exec backend bun prisma/seed/seed-employee.ts`. Dane przykładowe (`prisma db seed`) są tylko na dev.
 6. Firewall:
    ```sh
    ufw allow OpenSSH && ufw allow 80 && ufw enable
