@@ -17,6 +17,8 @@ export type SourceConfig = {
   minDelayMs?: number;
   /** Słowa kluczowe: wyszukiwanie (BazTOL) albo filtr lokalny po pobraniu (NCBR, OAI-PMH). Pusta lista = bez filtra */
   keywords?: string[];
+  /** Pobieranie stron szczegółów rekordów (NCBR) */
+  fetchDetails?: boolean;
   /** Zapytanie CQL dla EPO OPS */
   cql?: string;
   /** Zestaw i format OAI-PMH */
@@ -41,6 +43,8 @@ export const RADAR_CONFIG = {
       // Strona nie ma wyszukiwarki po stronie serwera: wszystkie ~315 pozycji są w jednym HTML-u.
       // Pusta lista = pierwsze N pozycji; podaj słowa, żeby filtrować lokalnie (bez rozróżniania wielkości liter).
       keywords: [],
+      // Pobieraj też stronę "Dowiedz się więcej" każdego projektu (opis, efekty, wdrożenie): +1 request/rekord
+      fetchDetails: true,
     },
     ppm: {
       name: "Polska Platforma Medyczna (OAI-PMH)",
