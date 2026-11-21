@@ -6,3 +6,4 @@ backend/prisma/generated
 backend/prisma/migrations
 backend/data
 frontend/src/lib/api-types.ts
+backend/src/scrapers/__fixtures__

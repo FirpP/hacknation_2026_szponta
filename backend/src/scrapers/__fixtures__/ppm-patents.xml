@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?><?xml-stylesheet type="text/xsl" href="/oai/static/oai2.xsl" ?>
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns3="https://www.openaire.eu/cerif-profile/vocab/COAR_Publication_Types" xmlns:ns4="https://www.openaire.eu/cerif-profile/1.1/" xmlns:ns5="https://www.openaire.eu/cerif-profile/vocab/OpenAIRE_Funding_Types" xmlns:ns6="https://www.openaire.eu/cerif-profile/vocab/COAR_Product_Types" xmlns:ns7="https://www.openaire.eu/cerif-profile/vocab/COAR_Patent_Types" xmlns:ns8="http://purl.org/coar/access_right" xmlns:ns9="https://www.openaire.eu/cerif-profile/vocab/OpenAIRE_Service_Compatibility" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+    <responseDate>2026-11-21T22:48:39Z</responseDate>
+    <request verb="ListRecords" set="openaire_cris_patents" from="2025-01-01T00:00:00Z" metadataPrefix="oai_cerif_openaire">https://ppm.edu.pl/oai</request>
+    <ListRecords>
+        <record>
+            <header>
+                <identifier>oai:ppm.edu.pl:Patents/UMWb07a6feda30347c08a9acd22e5db6ef1</identifier>
+                <datestamp>2026-11-19T09:04:22Z</datestamp>
+                <setSpec>openaire_cris_patents</setSpec>
+            </header>
+            <metadata>
+                <Patent id="UMWb07a6feda30347c08a9acd22e5db6ef1" xmlns="https://www.openaire.eu/cerif-profile/1.1/">
+                    <ns7:Type xmlns="https://www.openaire.eu/cerif-profile/vocab/COAR_Patent_Types">http://purl.org/coar/resource_type/c_15cd</ns7:Type>
+                    <ns4:Title xml:lang="pl">Prolek - glikokoniugat pochodny gemcytabiny, jako związek o działaniu przeciwnowotworowym, sposób otrzymywania i zastosowanie</ns4:Title>
+                    <ns4:Title xml:lang="en">Prodrug - Gemcitabine derivative glycoconjugate, as a new anticancer compound, method of preparation and application</ns4:Title>
+                    <ns4:RegistrationDate>2022-11-23+01:00</ns4:RegistrationDate>
+                    <ns4:ApprovalDate>2026-01-19+01:00</ns4:ApprovalDate>
+                    <ns4:Issuer>
+                        <ns4:OrgUnit>
+                            <ns4:Name xml:lang="pl">Wiadomości Urzędu Patentowego</ns4:Name>
+                        </ns4:OrgUnit>
+                    </ns4:Issuer>
+                    <ns4:Issuer>
+                        <ns4:OrgUnit>
+                            <ns4:Name xml:lang="pl">Biuletyn Urzędu Patentowego</ns4:Name>
+                        </ns4:OrgUnit>
+                    </ns4:Issuer>
+                    <ns4:PatentNumber>Pat.249385</ns4:PatentNumber>
+                    <ns4:Inventors>
+                        <ns4:Inventor>
+                            <ns4:DisplayName>Marta Anna Woźniak</ns4:DisplayName>
+                            <ns4:Person id="UMWbcca3588995948aa90e3d6900935d5f0"/>
+                            <ns4:Affiliation>
+<ns4:OrgUnit id="UMW3ffd7321520e47a0916f34976a2779b1"/>
+                            </ns4:Affiliation>
+                        </ns4:Inventor>
+                        <ns4:Inventor>
+                            <ns4:DisplayName>Sebastian Stanisław Makuch</ns4:DisplayName>
+                            <ns4:Person id="UMW3124ab3fafef4137b66594674e1fb5ff"/>
+                            <ns4:Affiliation>
+<ns4:OrgUnit id="UMW3ffd7321520e47a0916f34976a2779b1"/>
+                            </ns4:Affiliation>
+                        </ns4:Inventor>
+                        <ns4:Inventor>
+                            <ns4:DisplayName>Jerzy Łukasz Wiśniewski</ns4:DisplayName>
+                            <ns4:Person id="UMW5e1f533905ba47c5928fd7b17912b31c"/>
+                        </ns4:Inventor>
+                    </ns4:Inventors>
+                    <ns4:Holders>
+                        <ns4:Holder>
+                            <ns4:OrgUnit id="UMW4bbbaa210a214f35bf67741f5f7fda2d"/>
+                        </ns4:Holder>
+                        <ns4:Holder>
+                            <ns4:OrgUnit id="WUT256704"/>
+                        </ns4:Holder>
+                        <ns4:Holder>
+                            <ns4:OrgUnit id="WEiTI-d7d5ab9e-4677-41e8-ae21-be81e4ad00fb"/>
+                        </ns4:Holder>
+                        <ns4:Holder>
+                            <ns4:OrgUnit id="WUT04f4f0c8685e44caa705c8d99ebc0081"/>
+                        </ns4:Holder>
+                    </ns4:Holders>
+                </Patent>
+            </metadata>
+        </record>
+<record>
+            <header>
+                <identifier>oai:ppm.edu.pl:Patents/UMW91a05eec26884810b92d81e4e9bae1fc</identifier>
+                <datestamp>2026-11-19T09:04:21Z</datestamp>
+                <setSpec>openaire_cris_patents</setSpec>
+            </header>
+            <metadata>
+                <Patent id="UMW91a05eec26884810b92d81e4e9bae1fc" xmlns="https://www.openaire.eu/cerif-profile/1.1/">
+                    <ns7:Type xmlns="https://www.openaire.eu/cerif-profile/vocab/COAR_Patent_Types">http://purl.org/coar/resource_type/c_15cd</ns7:Type>
+                    <ns4:Title xml:lang="pl">Przyrząd stomatologiczny do pomiaru sił generowanych przez mięśnie odwodzące narządu żucia w trakcie rozwierania łuków zębowych</ns4:Title>
+                    <ns4:Title xml:lang="en">Stomatological instrument for measuring forces generated by the masticatory system abducting muscles at the moment of the dental arches gagging</ns4:Title>
+                    <ns4:RegistrationDate>2018-03-08+01:00</ns4:RegistrationDate>
+                    <ns4:ApprovalDate>2019-06-18+02:00</ns4:ApprovalDate>
+                    <ns4:Issuer>
+                        <ns4:OrgUnit>
+                            <ns4:Name xml:lang="pl">Wiadomości Urzędu Patentowego</ns4:Name>
+                        </ns4:OrgUnit>
+                    </ns4:Issuer>
+                    <ns4:PatentNumber>233363</ns4:PatentNumber>
+                    <ns4:Inventors>
+                        <ns4:Inventor>
+                            <ns4:DisplayName>Edward Stanisław Kijak</ns4:DisplayName>
+                            <ns4:Person id="UMW23c06fd780b64c00b56f18f22ade6daa"/>
+                            <ns4:Affiliation>
+<ns4:OrgUnit id="UMW9b625b63994e4942bca8855d619a3f54"/>
+                            </ns4:Affiliation>
+                        </ns4:Inventor>
+                    </ns4:Inventors>
+                    <ns4:Holders>
+                        <ns4:Holder>
+                            <ns4:OrgUnit id="UMW56ed909234b44a3e893412b88e0503d1"/>
+                        </ns4:Holder>
+                        <ns4:Holder>
+                            <ns4:OrgUnit id="WUT256704"/>
+                        </ns4:Holder>
+                        <ns4:Holder>
+                            <ns4:OrgUnit id="WUT1a86f682e05344f6aece657dc8e9ee7b"/>
+                        </ns4:Holder>
+                        <ns4:Holder>
+                            <ns4:OrgUnit id="WUT2ab9b9965a6c46f19b2e1c04c5886a87"/>
+                        </ns4:Holder>
+                    </ns4:Holders>
+                </Patent>
+            </metadata>
+        </record>
+<record>
+            <header>
+                <identifier>oai:ppm.edu.pl:Patents/UMW515cf99e8a5e4f8991849e846c1076b2</identifier>
+                <datestamp>2026-11-18T09:21:47Z</datestamp>
+                <setSpec>openaire_cris_patents</setSpec>
+            </header>
+            <metadata>
+                <Patent id="UMW515cf99e8a5e4f8991849e846c1076b2" xmlns="https://www.openaire.eu/cerif-profile/1.1/">
+                    <ns7:Type xmlns="https://www.openaire.eu/cerif-profile/vocab/COAR_Patent_Types">http://purl.org/coar/resource_type/c_15cd</ns7:Type>
+                    <ns4:Title xml:lang="pl">Preparat z ekstraktu z owoców derenia właściwego Cornus mas L. odmiany Raciborski do zastosowania w zapobieganiu i leczeniu osteoporozy</ns4:Title>
+                    <ns4:Title xml:lang="en">Application of a cornel-tree Cornus mas L. or its tissue or the products thereof, preferably fruit extract</ns4:Title>
+                    <ns4:RegistrationDate>2017-04-24+02:00</ns4:RegistrationDate>
+                    <ns4:ApprovalDate>2022-11-15+01:00</ns4:ApprovalDate>
+                    <ns4:Issuer>
+                        <ns4:OrgUnit>
+                            <ns4:Name xml:lang="pl">Wiadomości Urzędu Patentowego</ns4:Name>
+                        </ns4:OrgUnit>
+                    </ns4:Issuer>
+                    <ns4:PatentNumber>242411</ns4:PatentNumber>
+                    <ns4:Inventors>
+                        <ns4:Inventor>
+                            <ns4:DisplayName>Tomasz Sozański</ns4:DisplayName>
+                            <ns4:Person id="UMW9d142ca8cad44573971c075aa743ffd6"/>
+                            <ns4:Affiliation>
+<ns4:OrgUnit id="UMW131149467c8847c49d234c237f4e04cc"/>
+                            </ns4:Affiliation>
+                        </ns4:Inventor>
+                        <ns4:Inventor>
+                            <ns4:DisplayName>Adam Andrzej Szeląg</ns4:DisplayName>
+                            <ns4:Person id="UMW73030f4dcb9f4aaebc9f964114adfc76"/>
+                            <ns4:Affiliation>
+<ns4:OrgUnit id="UMW131149467c8847c49d234c237f4e04cc"/>
+                            </ns4:Affiliation>
+                        </ns4:Inventor>
+                        <ns4:Inventor>
+                            <ns4:DisplayName>Anna Barbara Merwid-Ląd</ns4:DisplayName>
+                            <ns4:Person id="UMW89747c932f0c4b36981c5b8972fa9a7d"/>
+                            <ns4:Affiliation>
+<ns4:OrgUnit id="UMW131149467c8847c49d234c237f4e04cc"/>
+                            </ns4:Affiliation>
+                        </ns4:Inventor>
+                        <ns4:Inventor>
+                            <ns4:DisplayName>Małgorzata Anna Trocha</ns4:DisplayName>
+                            <ns4:Person id="UMW03a3d8783e9c4969b6707d93461f391c"/>
+                            <ns4:Affiliation>
+<ns4:OrgUnit id="UMW131149467c8847c49d234c237f4e04cc"/>
+                            </ns4:Affiliation>
+                        </ns4:Inventor>
+                        <ns4:Inventor>
+                            <ns4:DisplayName>Dorota Irena Szumny</ns4:DisplayName>
+                            <ns4:Person id="UMW48616bb620ae4555b01161bee5146124"/>
+                            <ns4:Affiliation>
+<ns4:OrgUnit id="UMW131149467c8847c49d234c237f4e04cc"/>
+                            </ns4:Affiliation>
+                        </ns4:Inventor>
+                        <ns4:Inventor>
+                            <ns4:DisplayName>Jan Michał Magdalan</ns4:DisplayName>
+                            <ns4:Person id="UMWc8e2f5851443400baf8e67c89a677ed5"/>
+                            <ns4:Affiliation>
+<ns4:OrgUnit id="UMW131149467c8847c49d234c237f4e04cc"/>
+                            </ns4:Affiliation>
+                        </ns4:Inventor>
+                        <ns4:Inventor>
+                            <ns4:DisplayName>Agnieszka Matuszewska</ns4:DisplayName>
+                            <ns4:Person id="UMW31c959b818c5470f9ca081d3768ca7f2"/>
+                            <ns4:Affiliation>
+<ns4:OrgUnit id="UMW131149467c8847c49d234c237f4e04cc"/>
+                            </ns4:Affiliation>
+                        </ns4:Inventor>
+                    </ns4:Inventors>
+                    <ns4:Holders>
+                        <ns4:Holder>
+                            <ns4:OrgUnit id="UMW131149467c8847c49d234c237f4e04cc"/>
+                        </ns4:Holder>
+                        <ns4:Holder>
+                            <ns4:OrgUnit id="WUT8adcdce99d7e42d2bf06880410c9963e"/>
+                        </ns4:Holder>
+                        <ns4:Holder>
+                            <ns4:OrgUnit id="WUTaa5bbb22674a43ab819a9d38c6b411e1"/>
+                        </ns4:Holder>
+                        <ns4:Holder>
+                            <ns4:OrgUnit>
+<ns4:Name xml:lang="en">Arboretum and Institute of Physiography in Bolestraszyce</ns4:Name>
+<ns4:Identifier type="https://www.wikidata.org/wiki/Property:P1155">114713070</ns4:Identifier>
+                            </ns4:OrgUnit>
+                        </ns4:Holder>
+                    </ns4:Holders>
+                    <ns4:Abstract xml:lang="pl">Zgłoszenie dotyczy zastosowania derenia właściwego Cornus mas L. lub jego tkanek lub ich wytworów, zwłaszcza ekstraktu z owoców, do wytwarzania produktów leczniczych w leczeniu oraz w profilaktyce osteoporozy. Ponadto zgłoszenie dotyczy zastosowania derenia właściwego Cornus mas L. lub jego tkanek lub ich wytworów, zwłaszcza ekstraktu z owoców, do wytwarzania suplementu diety, środka żywieniowego lub jako składnika żywności funkcjonalnej, stosowanych w celu utrzymania fizjologicznego poziomu i zapobieganiu zaburzeniom gęstości mineralnej kości.</ns4:Abstract>
+                </Patent>
+            </metadata>
+        </record>
+<record>
+            <header>
+                <identifier>oai:ppm.edu.pl:Patents/UMW326e6d7aa15d440e888d85ed5ac408aa</identifier>
+                <datestamp>2026-11-15T09:09:54Z</datestamp>
+                <setSpec>openaire_cris_patents</setSpec>
+            </header>
+            <metadata>
+                <Patent id="UMW326e6d7aa15d440e888d85ed5ac408aa" xmlns="https://www.openaire.eu/cerif-profile/1.1/">
+                    <ns7:Type xmlns="https://www.openaire.eu/cerif-profile/vocab/COAR_Patent_Types">http://purl.org/coar/resource_type/c_15cd</ns7:Type>
+                    <ns4:Title xml:lang="pl">Sposób wytwarzania celulozy bakteryjnej</ns4:Title>
+                    <ns4:Title xml:lang="en">Method for producing bacterial cellulose</ns4:Title>
+                    <ns4:ApprovalDate>2018-01-31+01:00</ns4:ApprovalDate>
+                    <ns4:PatentNumber>227860</ns4:PatentNumber>
+                    <ns4:Inventors>
+                        <ns4:Inventor>
+                            <ns4:DisplayName>Adam Feliks Junka</ns4:DisplayName>
+                            <ns4:Person id="UMWd00d547e55ea4465a7442e3708dc3212"/>
+                            <ns4:Affiliation>
+<ns4:OrgUnit id="UMW5856c748691b41be99ea145a959310c9"/>
+                            </ns4:Affiliation>
+                        </ns4:Inventor>
+                    </ns4:Inventors>
+                    <ns4:Holders>
+                        <ns4:Holder>
+                            <ns4:OrgUnit id="UMW494864e9dd2b4cf4a40dacacb0f15ff6"/>
+                        </ns4:Holder>
+                        <ns4:Holder>
+                            <ns4:OrgUnit id="WUT4c9cb67ad0084dcb85560470bd6adb08"/>
+                        </ns4:Holder>
+                    </ns4:Holders>
+                    <ns4:Abstract xml:lang="pl">Sposób wytwarzania celulozy bakteryjnej według wynalazku polegający na&#13;
+przygotowaniu inokulum poprzez zaszczepienie na podłożu Herstin-Schramm&#13;
+zawierającym glukozę, ekstrakt drożdżowy, pepton bakteryjny, kwas cytrynowy,&#13;
+Na2HPO4, MgSO4·H2O, wysterylizowanym oraz wzbogacanym alkoholem&#13;
+etylowym, bakterii Gluconacetobacter xylinus przechowywanych na podłożu&#13;
+o składzie: glukoza, ekstrakt drożdżowy, pepton bakteryjny, kwas cytrynowy,&#13;
+Na2HPO4, MgSO4·7H2O, agar bakteriologiczny, wysterylizowanym&#13;
+i wzbogaconym alkoholem etylowym, następnie wymieszaniu przez 15 minut&#13;
+i inkubowaniu przez 7 dni w temperaturze 28-30oC, ponownym wymieszaniu&#13;
+hodowli przez 5 minut i przeniesieniu tak otrzymanego inokulum na świeże podłoże&#13;
+Herstin-Schramm o takim samym składzie w celu hodowli produkcyjnej,&#13;
+charakteryzuje się tym, że hodowlę produkcyjną prowadzi się w obecności&#13;
+wirującego pola magnetycznego o częstotliwości wirowania w zakresie 10-50 Hz,&#13;
+indukcji magnetycznej w zakresie 5-35 mT, przez 3 dni, przy pH w zakresie 4,5-5,5,&#13;
+w temperaturze 28-30oC. Otrzymane błony celulozowe przenosi się do czystych&#13;
+pojemników, przemywa wodą destylowaną, a następnie oczyszcza poprzez&#13;
+inkubacje w 0,1 M wodnym roztworze NaOH w temperaturze 90°C przez 30 minut,&#13;
+przy czym procedurę oczyszczania powtarza się trzykrotnie, następnie oczyszczoną&#13;
+celulozę płucze się w wodzie destylowanej do momentu ustabilizowania pH na&#13;
+poziomie 6,5-7,5 i suszy w 60°C do momentu uzyskania stałej wagi.</ns4:Abstract>
+                </Patent>
+            </metadata>
+        </record>
+<record>
+            <header>
+                <identifier>oai:ppm.edu.pl:Patents/UMWa299f1db4a374e7883f87ce1459851fa</identifier>
+                <datestamp>2026-11-15T09:03:02Z</datestamp>
+                <setSpec>openaire_cris_patents</setSpec>
+            </header>
+            <metadata>
+                <Patent id="UMWa299f1db4a374e7883f87ce1459851fa" xmlns="https://www.openaire.eu/cerif-profile/1.1/">
+                    <ns7:Type xmlns="https://www.openaire.eu/cerif-profile/vocab/COAR_Patent_Types">http://purl.org/coar/resource_type/c_15cd</ns7:Type>
+                    <ns4:Title xml:lang="pl">Sposób pozyskiwania helenaliny i dihydrohelenaliny oraz estrów tych substancji z kultur in vitro Arnica</ns4:Title>
+                    <ns4:Title xml:lang="en">Method for receiving helenalin and dihydrohelenalin and esters of these substances from in vitro cultures of Arnica and their application</ns4:Title>
+                    <ns4:RegistrationDate>2015-07-20+02:00</ns4:RegistrationDate>
+                    <ns4:ApprovalDate>2021-01-14+01:00</ns4:ApprovalDate>
+                    <ns4:Issuer>
+                        <ns4:OrgUnit>
+                            <ns4:Name xml:lang="pl">Wiadomości Urzędu Patentowego</ns4:Name>
+                        </ns4:OrgUnit>
+                    </ns4:Issuer>
+                    <ns4:PatentNumber>237808</ns4:PatentNumber>
+                    <ns4:Inventors>
+                        <ns4:Inventor>
+                            <ns4:DisplayName>Agata Kierasińska</ns4:DisplayName>
+                            <ns4:Person>
+<ns4:PersonName>
+    <ns4:FamilyNames>Kierasińska</ns4:FamilyNames>
+    <ns4:FirstNames>Agata</ns4:FirstNames>
+</ns4:PersonName>
+<ns4:Affiliation>
+    <ns4:OrgUnit id="UMW970d6c78c5d34c7782337c93f83ee5e7"/>
+</ns4:Affiliation>
+                            </ns4:Person>
+                            <ns4:Affiliation>
+<ns4:OrgUnit id="UMW970d6c78c5d34c7782337c93f83ee5e7"/>
+                            </ns4:Affiliation>
+                        </ns4:Inventor>
+                        <ns4:Inventor>
+                            <ns4:DisplayName>Jerzy Łukasz Wiśniewski</ns4:DisplayName>
+                            <ns4:Person id="UMW5e1f533905ba47c5928fd7b17912b31c"/>
+                            <ns4:Affiliation>
+<ns4:OrgUnit id="UMW44c6eef5f1ef499a88595de95f5d3e6a"/>
+                            </ns4:Affiliation>
+                        </ns4:Inventor>
+                        <ns4:Inventor>
+                            <ns4:DisplayName>Andrzej Wincenty Gamian</ns4:DisplayName>
+                            <ns4:Person id="UMW56f0b41e3be44ce1b085efdc5c41e984"/>
+                            <ns4:Affiliation>
+<ns4:OrgUnit id="UMW44c6eef5f1ef499a88595de95f5d3e6a"/>
+                            </ns4:Affiliation>
+                        </ns4:Inventor>
+                    </ns4:Inventors>
+                    <ns4:Holders>
+                        <ns4:Holder>
+                            <ns4:OrgUnit id="UMW970d6c78c5d34c7782337c93f83ee5e7"/>
+                        </ns4:Holder>
+                        <ns4:Holder>
+                            <ns4:OrgUnit id="WUT9d8f250613534dd7ad2430785c56437c"/>
+                        </ns4:Holder>
+                    </ns4:Holders>
+                    <ns4:Abstract xml:lang="pl">Przedmiotem zgłoszenia jest sposób pozyskiwania helenaliny i dihydrohelenaliny oraz estrów tych substancji w kulturze in vitro A. montana, A. montana cv. Arbo, A. chamissonis oraz zastosowanie helenaliny i dihydrohelenaliny w przemyśle farmaceutycznym i w kosmetologii jako środków o właściwościach przeciwzapalnych, cytostatycznych, przeciwbólowych, przeciwobrzękowych, bakteriostatycznych i przeciwgrzybiczych.</ns4:Abstract>
+                </Patent>
+            </metadata>
+        </record>
+    </ListRecords>
+</OAI-PMH>
