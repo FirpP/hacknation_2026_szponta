@@ -66,6 +66,35 @@ Skrypty z katalogu głównego: `bun run lint | format | format:check | typecheck
 cd backend && DATABASE_URL=file:./prisma/dev.db bunx --bun prisma generate
 ```
 
+## Radar Innowacji: pipeline danych
+
+Pipeline działa tak: scraper → `RawRecord` (surowy fragment źródła, `contentHash`) → analiza LLM → `InnovationCard` → `GET /api/v1/cards`. Każdy etap uruchamiasz osobno. Skrypty z katalogu głównego wykonują się w kontenerze `backend-dev`, więc pipeline i API korzystają z tej samej bazy.
+
+```sh
+bun run db:migrate                 # migracje (ScrapeRun, RawRecord, InnovationCard)
+bun run db:seed-demo               # 6 kart demo z prawdziwych fixture'ów: offline, bez klucza LLM
+bun run scrape:ncbr --limit 5      # jedno źródło (ncbr|baztol|epo|uprp|ppm|pbn|pan|interreg), --offline = fixture
+bun run scrape:all                 # wszystkie źródła, tabela statusów
+bun run analyze --limit 3          # karty dla nowych/zmienionych rekordów (--source ncbr, --retry-failed)
+bun run pipeline                   # scrape:all + analyze pod jednym lockiem
+bun run cron                       # harmonogram co 24 h (RADAR_CRON), --now = pierwszy run od razu; w tle: cron:detached
+```
+
+- **Konfiguracja:** zapytania, słowa kluczowe, limity (domyślnie 20 na źródło) i opóźnienia są w [backend/src/radar.config.ts](backend/src/radar.config.ts), a klucze w `.env` (patrz `.env.example`: `LLM_*`, `EPO_OPS_*`).
+- **Grzeczny crawler:** robots.txt respektowany ściśle (Disallow lub brak dostępu => `SKIPPED`), własny User-Agent, min. 1 s między requestami do hosta (lub `Crawl-delay`), timeout 20 s, 3 próby z backoffem.
+- **Idempotencja:** upsert po `(source, externalId)`. Zmiana `contentHash` oznacza ponowną analizę. Lockfile `backend/data/radar.lock` blokuje nakładanie się runów (kod wyjścia 2).
+- **Przejrzystość:** model zwraca cytaty (`evidence`), które kod sprawdza w surowym rekordzie (`verified`). Pole jest `CONFIRMED` tylko z potwierdzonym cytatem; oceny 1–5, TRL i `isInnovation` są `ESTIMATED`.
+
+| Źródło                      | Dostęp                                    | Status (2026-11-21)                                           |
+| --------------------------- | ----------------------------------------- | ------------------------------------------------------------- |
+| NCBR, wyszukiwarka sukcesów | HTML (cheerio)                            | działa                                                        |
+| BazTOL (PUT)                | formularz POST, HTML                      | działa (katalog stron, mała wartość)                          |
+| EPO / UPRP                  | EPO OPS API (UPRP: publikacje PL z DOCDB) | wymaga `EPO_OPS_KEY`/`EPO_OPS_SECRET`, `TODO(verify)` CQL     |
+| PPM                         | OAI-PMH                                   | `SKIPPED`: robots.txt `Disallow: /`; działa tylko `--offline` |
+| PBN                         | API z tokenem aplikacji                   | `SKIPPED` bez tokenu, `TODO(verify)`                          |
+| Czasopisma PAN (dLibra)     | OAI-PMH                                   | `SKIPPED`: weryfikacja anti-bot zamiast odpowiedzi            |
+| Interreg                    | nieznany                                  | `SKIPPED`: host nie odpowiadał, `TODO(verify)`                |
+
 ## Deploy na Droplet (DigitalOcean)
 
 Produkcja to profil `prod`: Nginx na porcie 80 serwuje zbudowany frontend i przekazuje `/api` do backendu. Backend nie jest wystawiony na zewnątrz, a baza SQLite (tryb WAL) leży w wolumenie `<projekt>_backend_data`. Nginx przyjmuje body do 20 MB (uploady) i przepuszcza WebSockety oraz SSE pod `/api`. `index.html` jest zawsze rewalidowany, więc po redeployu przeglądarka nie trzyma starej wersji. Całość mieści się w kilkudziesięciu MB RAM (backend ok. 50 MB, nginx ok. 20 MB).
