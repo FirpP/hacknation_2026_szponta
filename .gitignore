@@ -3,4 +3,6 @@
 .env
 backend/prisma/generated/
 backend/prisma/*.db*
-backend/data
+# Migawka bazy dev jest w repo (wgrywanie: bun run dev:db:restore), reszta katalogu nie
+backend/data/*
+!backend/data/dev-snapshot.db
