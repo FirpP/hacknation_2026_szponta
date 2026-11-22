@@ -1,179 +1,67 @@
 # Radar Innowacji
 
-Prototyp na wyzwanie Podkarpackiego Centrum Innowacji (HackNation 2026): robot zbiera istniejące innowacje z publicznych źródeł, model AI opisuje je jako karty z oceną potencjału i cytatami ze źródeł, a strona pozwala je przeszukiwać i filtrować. Aplikacja jest publiczna i tylko do odczytu.
+Prototyp na wyzwanie Podkarpackiego Centrum Innowacji (HackNation 2026). Robot zbiera istniejące innowacje z publicznych źródeł, model AI opisuje je jako karty z oceną potencjału, rekomendowaną ścieżką i cytatami ze źródeł, a strona pozwala je przeszukiwać i filtrować. Aplikacja jest publiczna i tylko do odczytu.
 
-Jeden runtime (Bun) w całym projekcie. Backend (Hono + Prisma + SQLite) i frontend (React + Vite) to osobne pakiety, każdy z własnym `package.json` i `bun.lock`. Jeden `Dockerfile` i jeden `docker-compose.yml` obsługują development i produkcję (profile `dev` i `prod`).
+Backend: Hono + Prisma + SQLite (`backend/`). Frontend: React + Vite (`frontend/`). Całość działa w Dockerze.
 
-## Struktura
+## Wymagania
 
-```
-backend/    API: Hono + Prisma (SQLite) + zod, moduły w src/api/<moduł>/ (routes, controllers, services, repositories, validators, docs, types)
-frontend/   React + Vite + TanStack Query (alias "@" wskazuje na src/), hooki per funkcja w src/features/<nazwa>/
-nginx/      konfiguracja Nginx używana tylko na produkcji
-Dockerfile  jeden plik, cele: dev-backend, dev-frontend, backend, web
-.github/    CODEOWNERS
-```
+- Docker z Docker Compose v2
+- Bun (opcjonalnie, tylko do skrótów `bun run ...` z katalogu głównego; każdy skrót ma odpowiednik w `docker compose`)
 
-Nazwa projektu Compose (prefiks kontenerów i wolumenów, w tym bazy) to nazwa katalogu, więc dwa klony na jednej maszynie się nie gryzą. Własną nazwę ustawisz w `.env`: `COMPOSE_PROJECT_NAME=moj-projekt`.
-
-## Development
+## Uruchomienie
 
 ```sh
-docker compose --profile dev up --build   # lub: bun run docker:dev
+docker compose --profile dev up --build    # development, hot reload
+docker compose --profile prod up -d --build   # produkcja
 ```
 
-- Frontend (Vite, hot reload): http://localhost:8080 (zapytania do `/api` idą przez proxy Vite do backendu)
-- Backend: http://localhost:3000
-- Backend i frontend to osobne kontenery (`backend-dev` i `frontend-dev`), więc mają osobne logi: `docker compose --profile dev logs -f backend-dev` lub `frontend-dev` (w Docker Desktop kliknij kontener w grupie o nazwie projektu). Backend loguje każde żądanie (metoda, ścieżka, status, czas); błędy 4xx to jedna linia, 5xx ze stackiem.
-- Przy starcie każdy kontener instaluje nowe paczki, a backend dodatkowo generuje klienta Prisma, wgrywa snapshot do pustej bazy i stosuje migracje.
+| Profil | Adres                                                         | Uwagi                                      |
+| ------ | ------------------------------------------------------------- | ------------------------------------------ |
+| `dev`  | http://localhost:8080 (frontend), http://localhost:3000 (API) | Swagger: http://localhost:8080/api/v1/docs |
+| `prod` | http://localhost (nginx, port `APP_PORT`)                     | API tylko przez nginx pod `/api`           |
 
-Zmienne środowiskowe są opcjonalne (analiza LLM potrzebuje `LLM_*`). Jeśli chcesz coś nadpisać: `cp .env.example .env` (po utworzeniu `.env` uruchom kontenery ponownie, bo Docker czyta go przy tworzeniu kontenera).
+Przy pierwszym starcie kontener wgrywa gotową bazę z `backend/data/snapshot.db` (karty bez scrapowania i bez kosztów LLM), generuje klienta Prisma i stosuje migracje. Wgranie następuje tylko do pustej bazy, więc istniejących danych nic nie nadpisze. Baza leży w wolumenie Dockera i nie należy otwierać jej z hosta na żywo.
 
-Prisma (z katalogu głównego, polecenia wykonują się w kontenerze `backend-dev`):
+Aby wgrać snapshot od nowa, usuń wolumen z bazą i uruchom ponownie (`docker compose --profile dev down -v`; na produkcji to kasuje bazę).
+
+## Konfiguracja (opcjonalna)
+
+Domyślne wartości wystarczą do uruchomienia. Aby coś zmienić: `cp .env.example .env`, a po zmianie odtwórz kontenery (`docker compose --profile dev up -d`), bo Docker czyta `.env` przy ich tworzeniu.
+
+| Zmienna                                             | Do czego                                                                                                      |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`          | Analiza nowych rekordów modelem zgodnym z API OpenAI. Bez nich nowe rekordy są pobierane, ale nie analizowane |
+| `EPO_OPS_KEY`, `EPO_OPS_SECRET`                     | Źródła `epo` i `uprp` (bez kluczy są pomijane)                                                                |
+| `PBN_APP_ID`, `PBN_APP_TOKEN`                       | Źródło `pbn` (bez tokenu jest pomijane)                                                                       |
+| `RADAR_CRON`, `RADAR_TZ`                            | Termin nocnego odświeżania, domyślnie `0 3 * * *` w strefie `Europe/Warsaw`                                   |
+| `RADAR_CRON_ENABLED_PROD`, `RADAR_CRON_ENABLED_DEV` | Automatyczne odświeżanie bazy: domyślnie włączone na produkcji i wyłączone w dev                              |
+| `APP_PORT`, `FRONTEND_PORT`, `BACKEND_PORT`         | Porty wystawiane na hoście                                                                                    |
+
+## Dane
+
+Na produkcji backend sam uruchamia pipeline (pobranie źródeł i analiza) codziennie o 03:00 czasu polskiego. Ręcznie, z katalogu głównego (w kontenerze `backend-dev`):
 
 ```sh
-bun run dev:prisma:migrate   # nowa migracja po zmianie schema.prisma
-bun run dev:prisma:generate  # klient Prisma po zmianie schema.prisma (bez restartu kontenera)
-bun run dev:prisma:studio    # podgląd i edycja danych: http://localhost:5555 (Ctrl+C kończy)
-bun run db:snapshot          # zapis działającej bazy (dev, a bez dev prod) do backend/data/snapshot.db; argument: dev|prod
+bun run pipeline                 # pobranie wszystkich źródeł + analiza
+bun run scrape:ncbr --limit 5    # jedno źródło (ncbr|baztol|epo|uprp|ppm|pbn|pan|interreg)
+bun run analyze                  # analiza nowych i zmienionych rekordów
+bun run db:snapshot              # zapis bazy do backend/data/snapshot.db (dev, a gdy go nie ma prod)
 ```
 
-**Baza startowa (snapshot) wgrywa się sama.** W repo jest jeden plik `backend/data/snapshot.db`, wspólny dla dev i prod. Trafia do obrazu przy buildzie (`/app/seed/snapshot.db`), a przy każdym starcie kontenera `bun run db:restore` (`backend/src/db/restore-snapshot.ts`) wgrywa go do bazy **tylko wtedy, gdy baza nie istnieje albo jest pusta** (zero rekordów w `ScrapeRun`, `RawRecord`, `InnovationCard`). Baza z danymi nigdy nie jest nadpisywana. Plik jest sprawdzany przed wgraniem (integralność, tabele Radaru), potem startuje `prisma migrate deploy`, który stosuje brakujące migracje. Uszkodzony snapshot przerywa start z komunikatem, a brak snapshotu daje pustą bazę.
+Na produkcji to samo: `docker compose --profile prod exec backend bun run pipeline`.
 
-- **Nowy snapshot:** `bun run db:snapshot` (wybiera działający kontener, albo podaj `bun run db:snapshot prod`) nadpisuje `backend/data/snapshot.db` aktualną bazą z kontenera. Snapshot jest wgrywany do obrazu, więc po zmianie przebuduj: `docker compose --profile dev up --build`.
-- **Wgranie snapshotu od nowa** (np. po zepsuciu bazy dev): usuń wolumen z bazą i uruchom ponownie. `docker compose --profile dev down -v` kasuje wolumeny dev (baza i `node_modules`, te drugie `bun install` odtworzy). Na produkcji `docker compose --profile prod down -v` **kasuje bazę produkcyjną**, więc zrób najpierw backup (niżej).
-
-**Baza dev leży w wolumenie Dockera** (`/app/backend/data/dev.db` w kontenerze), a nie w katalogu repo. **Nie otwieraj jej z hosta na żywo.** Przy Docker Desktop kontener działa w VM, a SQLite w trybie WAL wymaga pamięci współdzielonej i blokad plików między wszystkimi procesami. Podgląd z hosta (np. rozszerzenie SQLite w VS Code) widziałby wtedy stare dane i mógłby cofnąć zapisy aplikacji. Do przeglądania służy Prisma Studio uruchamiane w kontenerze albo migawka. Zmiany w migawce nie wracają do bazy.
-
-**Migracje są scalone w jedną (`20261115140000_init`).** Nowe bazy i `prisma migrate deploy` (start kontenera) działają bez zmian. Jeśli masz starą bazę dev i `bun run db:migrate` żąda resetu („migration was modified after it was applied"), nie resetuj jej: popraw raz historię migracji, a dane zostaną.
+## Kontrola jakości
 
 ```sh
-SUM=$(sha256sum backend/prisma/migrations/20261115140000_init/migration.sql | cut -d' ' -f1)
-docker compose --profile dev exec backend-dev bun -e "import {Database} from 'bun:sqlite'; const d=new Database('/app/backend/data/dev.db'); d.run(\"UPDATE _prisma_migrations SET checksum='$SUM' WHERE migration_name='20261115140000_init'\"); d.run(\"DELETE FROM _prisma_migrations WHERE migration_name IN ('20261121220023_radar','20261122020000_drop_employee')\")"
+bun run install:all   # zależności backendu i frontendu
+bun run check         # typy, lint, format, testy, cykle zależności
 ```
-
-Na świeżym klonie wystarczy `docker compose --profile dev up --build`, bo przy każdym starcie backend sam generuje klienta Prisma i stosuje istniejące migracje. Baza startowa z `backend/data/snapshot.db` wgrywa się przy pierwszym starcie sama (patrz wyżej), więc karty są od razu.
-
-Błędy Prismy nie wymagają obsługi w serwisach: `errorHandler` zamienia duplikat pola `@unique` (P2002) na 409 `CONFLICT` z polem w `details`, a brak rekordu przy update/delete (P2025) na 404.
-
-### Narzędzia na hoście (opcjonalnie)
-
-Aplikacja działa tylko w Dockerze, ale żeby edytor miał podpowiedzi TypeScript, a lint, testy i formatowanie działały bez kontenera, zainstaluj paczki na hoście (wymaga Buna):
-
-```sh
-bun run install:all
-```
-
-Skrypty z katalogu głównego: `bun run lint | format | format:check | typecheck | test:backend | check:circular`, a `bun run check` uruchamia je wszystkie. Testy (`bun test`) nie wymagają bazy, Dockera ani zmiennych środowiska. Typecheck i lint potrzebują wygenerowanego klienta Prisma. Powstaje on na hoście sam po pierwszym `docker compose --profile dev up`, bo katalog `backend/` jest zamontowany w kontenerze. Bez Dockera wygeneruj go ręcznie:
-
-```sh
-cd backend && DATABASE_URL=file:./prisma/dev.db bunx --bun prisma generate
-```
-
-## Radar Innowacji: pipeline danych
-
-Pipeline działa tak: scraper → `RawRecord` (surowy fragment źródła, `contentHash`) → analiza LLM → `InnovationCard` → `GET /api/v1/cards`. Każdy etap uruchamiasz osobno. Skrypty z katalogu głównego wykonują się w kontenerze `backend-dev`, więc pipeline i API korzystają z tej samej bazy.
-
-```sh
-bun run db:migrate                 # migracje (ScrapeRun, RawRecord, InnovationCard)
-bun run scrape:ncbr --limit 5      # jedno źródło (ncbr|baztol|epo|uprp|ppm|pbn|pan|interreg), --offline = fixture
-bun run scrape:all                 # wszystkie źródła, tabela statusów
-bun run analyze --limit 3          # karty dla nowych/zmienionych rekordów (--source ncbr, --retry-failed)
-bun run pipeline                   # scrape:all + analyze pod jednym lockiem
-bun run cron --now                 # ręczny harmonogram w osobnym procesie; zwykle zbędny (patrz niżej), --now = run od razu
-```
-
-- **Automatyczny harmonogram:** serwer API (dev i prod) sam planuje pipeline (`scrape:all` + analiza) codziennie o **03:00 czasu polskiego** i niczego nie trzeba uruchamiać ręcznie. Termin ustawia `RADAR_CRON` (domyślnie `0 3 * * *`), strefę `RADAR_TZ` (domyślnie `Europe/Warsaw`, bo kontener działa w UTC), a harmonogram włączasz i wyłączasz osobno dla profili w `.env`: `RADAR_CRON_ENABLED_PROD` (domyślnie `true`) i `RADAR_CRON_ENABLED_DEV` (domyślnie `false`, żeby laptop nie wołał źródeł i LLM w nocy). Poza Dockerem obowiązuje `RADAR_CRON_ENABLED` (domyślnie `true`). Kod: [backend/src/pipeline/scheduler.ts](backend/src/pipeline/scheduler.ts), start w `src/index.ts`. Działa w procesie API, a nie w osobnym kontenerze, bo baza SQLite nie powinna być otwierana z dwóch kontenerów naraz. Nakładanie się runów blokuje lock (`radar.lock`), więc ręczne `bun run pipeline` w trakcie nocnego runu odmówi, a nocny run pominie termin, gdy ręczny jeszcze trwa. Bez kluczy `LLM_*` run tylko pobiera dane, a analizę pomija. Termin i strefę znajdziesz w logu startowym backendu (`⏰ Harmonogram Radaru: ..., następny run: ...`). Błędne `RADAR_CRON` lub `RADAR_TZ` przerywa start serwera.
-
-- **Konfiguracja:** zapytania, słowa kluczowe, limity (domyślnie 20 na źródło) i opóźnienia są w [backend/src/radar.config.ts](backend/src/radar.config.ts), a klucze w `.env` (patrz `.env.example`: `LLM_*`, `EPO_OPS_*`).
-- **Grzeczny crawler:** robots.txt respektowany ściśle (Disallow lub brak dostępu => `SKIPPED`), własny User-Agent, min. 1 s między requestami do hosta (lub `Crawl-delay`), timeout 20 s, 3 próby z backoffem.
-- **Idempotencja:** upsert po `(source, externalId)`. Zmiana `contentHash` oznacza ponowną analizę. Lockfile `backend/data/radar.lock` blokuje nakładanie się runów (kod wyjścia 2).
-- **Przejrzystość:** model zwraca cytaty (`evidence`), które kod sprawdza w surowym rekordzie (`verified`). Pole jest `CONFIRMED` tylko z potwierdzonym cytatem; oceny 1–5, TRL i `isInnovation` są `ESTIMATED`.
-
-| Źródło                      | Dostęp                                    | Status (2026-11-21)                                           |
-| --------------------------- | ----------------------------------------- | ------------------------------------------------------------- |
-| NCBR, wyszukiwarka sukcesów | HTML (cheerio)                            | działa                                                        |
-| BazTOL (PUT)                | formularz POST, HTML                      | działa (katalog stron, mała wartość)                          |
-| EPO / UPRP                  | EPO OPS API (UPRP: publikacje PL z DOCDB) | wymaga `EPO_OPS_KEY`/`EPO_OPS_SECRET`, `TODO(verify)` CQL     |
-| PPM                         | OAI-PMH                                   | `SKIPPED`: robots.txt `Disallow: /`; działa tylko `--offline` |
-| PBN                         | API z tokenem aplikacji                   | `SKIPPED` bez tokenu, `TODO(verify)`                          |
-| Czasopisma PAN (dLibra)     | OAI-PMH                                   | `SKIPPED`: weryfikacja anti-bot zamiast odpowiedzi            |
-| Interreg                    | nieznany                                  | `SKIPPED`: host nie odpowiadał, `TODO(verify)`                |
-
-## Deploy na Droplet (DigitalOcean)
-
-Produkcja to profil `prod`: Nginx na porcie 80 serwuje zbudowany frontend i przekazuje `/api` do backendu. Backend nie jest wystawiony na zewnątrz, a baza SQLite (tryb WAL) leży w wolumenie `<projekt>_backend_data`. `index.html` jest zawsze rewalidowany, więc po redeployu przeglądarka nie trzyma starej wersji. Całość mieści się w kilkudziesięciu MB RAM (backend ok. 50 MB, nginx ok. 20 MB).
-
-1. Utwórz Droplet z obrazem **Docker on Ubuntu** (Marketplace) i zaloguj się przez SSH.
-2. Przy 2 GB RAM dodaj swap na czas budowania obrazów (`vite build` i `bun install` chwilowo potrzebują więcej pamięci):
-   ```sh
-   fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
-   echo '/swapfile none swap sw 0 0' >> /etc/fstab
-   ```
-3. Sklonuj repozytorium. `.env` jest opcjonalny: utwórz go z `.env.example`, jeśli produkcja ma też uruchamiać analizę LLM (`LLM_*`) albo potrzebujesz innego portu (`APP_PORT`).
-4. Zbuduj i uruchom:
-   ```sh
-   docker compose --profile prod up -d --build
-   ```
-5. Karty z `backend/data/snapshot.db` wgrają się same przy pierwszym starcie (pusty wolumen), bez scrapowania i kosztów LLM. Nic nie musisz uruchamiać.
-6. Firewall:
-   ```sh
-   ufw allow OpenSSH && ufw allow 80 && ufw enable
-   ```
-7. Aktualizacja po zmianach:
-   ```sh
-   git pull && docker compose --profile prod up -d --build
-   ```
-
-Aplikacja działa pod `http://<IP-Dropletu>`.
-
-Konfiguracja Nginx jest w `nginx/default.conf`. Po jej zmianie wystarczy `docker compose --profile prod restart web`, bez przebudowy obrazu.
-
-Podgląd bazy produkcyjnej w kliencie SQLite: baza leży w wolumenie Dockera, więc skrypt `backend/scripts/db-snapshot.sh` (`bun run db:snapshot prod`) zapisuje jej spójną migawkę do `backend/data/snapshot.db`. To ten sam plik, z którego startują nowe bazy dev i prod, więc nie commituj migawki z produkcji, jeśli nie chcesz, żeby stała się nową bazą startową. Migawka się nie odświeża, uruchom skrypt ponownie po zmianach. Wymaga działającego profilu `prod`.
-
-Backup bazy (z katalogu repo, przy działającym profilu `prod`):
-
-```sh
-docker run --rm --volumes-from "$(docker compose --profile prod ps -q backend)" -v "$PWD":/backup alpine tar czf /backup/db-backup.tgz -C /app/backend/data .
-```
-
-## Dokumentacja API (Swagger)
-
-Tylko w developmencie (`NODE_ENV` inne niż `production`):
-
-- Swagger UI: http://localhost:8080/api/v1/docs
-- Spec OpenAPI (JSON): http://localhost:8080/api/v1/openapi.json
-
-Spec generuje się ze schematów zod. Trasa bez opisu nie pojawia się w dokumentacji. Żeby dodać nową:
-
-1. W module utwórz/rozszerz `docs/<moduł>.docs.ts` i opisz trasę przez `describeRoute` (wzór: `backend/src/api/cards/docs/cards.docs.ts`).
-2. Schemat odpowiedzi podaj przez `resolver(...)`. Schemat z `.meta({ ref: "Nazwa" })` trafi do `components.schemas`.
-3. Dodaj opis jako middleware w routerze: `cardsRouter.get("/", listCardsDocs, validate("query", CardsQuerySchema), handler)`.
-
-Typy (`CardSummary`, `CardDetail`, `Stats`) wynikają ze schematów zod (`z.infer` w `validators/`), więc schemat jest jedynym źródłem prawdy dla specu i kodu. Format błędów (`{ error: { code, message, details? } }`) jest opisany w `ErrorResponseSchema` i przetestowany w `backend/src/middleware/error-handler.test.ts`.
-
-### Typy API na froncie
-
-Frontend nie przepisuje typów ręcznie, tylko generuje je ze speca OpenAPI do `frontend/src/lib/api-types.ts` (plik jest w repo, bo build produkcyjny nie ma dostępu do backendu; nie edytuj go ręcznie). Po zmianie schematu zod lub dodaniu trasy, przy działającym `bun run docker:dev`:
-
-```sh
-bun run gen:api   # pobiera http://localhost:3000/api/v1/openapi.json
-```
-
-Użycie: `type CardSummary = components["schemas"]["CardSummary"]` (wzór: `frontend/src/lib/types/cards.types.ts`). Do `components.schemas` trafiają tylko schematy z `.meta({ ref: "Nazwa" })`.
-
-## Frontend: wzorce
-
-- **Zapytania** idą przez `api.get` z `src/lib/api-client.ts` (API jest tylko do odczytu; błędy jako `ApiError` z `status`, `code` i `details`). Hooki TanStack Query trzymaj w `src/features/<nazwa>/` razem z fabryką kluczy (wzór: `features/cards/cards.hooks.ts` i `cards.keys.ts`).
-- **Strony:** `/` (opis i statystyki), `/radar` (lista i widok radaru, filtry w URL), `/karty/:id` (karta z cytatami). Style i tokeny kolorów są w `src/styles/global.css`.
-- `ErrorBoundary` zamiast białego ekranu przy błędzie renderu, React Query Devtools (ikonka w rogu) tylko w dev.
 
 ## Licencja i autorzy
 
-Projekt jest udostępniany na licencji **EUPL-1.2** (Licencja Publiczna Unii Europejskiej, wersja 1.2), zgodnie z regulaminem zadania: pełny tekst w pliku [LICENSE](LICENSE).
+Projekt jest udostępniany na licencji **EUPL-1.2** (pełny tekst w pliku [LICENSE](LICENSE)).
 
 Licensed under the EUPL
 
-Autorzy (wg historii repozytorium): Najdz3l, FirpP, Sachiko7552, yDarknessGuy, GRATIZZZ1311, pelus2115.
-
-Zależności bezpośrednie (Hono, Prisma, React, TanStack Query, node-cron i inne) są na licencjach MIT, Apache-2.0, ISC i BSD-2-Clause. Font Lato jest ładowany z Google Fonts (SIL Open Font License) i nie jest dołączony do repozytorium. Treści ze źródeł publicznych są cytowane z odnośnikiem do oryginału, a scrapery respektują `robots.txt`.
+Autorzy: Najdz3l, FirpP, Sachiko7552, yDarknessGuy, GRATIZZZ1311, pelus2115.
