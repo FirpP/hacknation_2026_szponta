@@ -45,6 +45,13 @@ bun run db:snapshot          # zapis działającej bazy (dev, a bez dev prod) do
 
 **Baza dev leży w wolumenie Dockera** (`/app/backend/data/dev.db` w kontenerze), a nie w katalogu repo. **Nie otwieraj jej z hosta na żywo.** Przy Docker Desktop kontener działa w VM, a SQLite w trybie WAL wymaga pamięci współdzielonej i blokad plików między wszystkimi procesami. Podgląd z hosta (np. rozszerzenie SQLite w VS Code) widziałby wtedy stare dane i mógłby cofnąć zapisy aplikacji. Do przeglądania służy Prisma Studio uruchamiane w kontenerze albo migawka. Zmiany w migawce nie wracają do bazy.
 
+**Migracje są scalone w jedną (`20261115140000_init`).** Nowe bazy i `prisma migrate deploy` (start kontenera) działają bez zmian. Jeśli masz starą bazę dev i `bun run db:migrate` żąda resetu („migration was modified after it was applied"), nie resetuj jej: popraw raz historię migracji, a dane zostaną.
+
+```sh
+SUM=$(sha256sum backend/prisma/migrations/20261115140000_init/migration.sql | cut -d' ' -f1)
+docker compose --profile dev exec backend-dev bun -e "import {Database} from 'bun:sqlite'; const d=new Database('/app/backend/data/dev.db'); d.run(\"UPDATE _prisma_migrations SET checksum='$SUM' WHERE migration_name='20261115140000_init'\"); d.run(\"DELETE FROM _prisma_migrations WHERE migration_name IN ('20261121220023_radar','20261122020000_drop_employee')\")"
+```
+
 Na świeżym klonie wystarczy `docker compose --profile dev up --build`, bo przy każdym starcie backend sam generuje klienta Prisma i stosuje istniejące migracje. Baza startowa z `backend/data/snapshot.db` wgrywa się przy pierwszym starcie sama (patrz wyżej), więc karty są od razu.
 
 Błędy Prismy nie wymagają obsługi w serwisach: `errorHandler` zamienia duplikat pola `@unique` (P2002) na 409 `CONFLICT` z polem w `details`, a brak rekordu przy update/delete (P2025) na 404.
