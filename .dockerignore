@@ -7,4 +7,5 @@
 **/.env.*
 backend/prisma/generated
 backend/prisma/*.db*
-backend/data
+backend/data/*
+!backend/data/snapshot.db

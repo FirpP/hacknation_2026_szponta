@@ -27,7 +27,7 @@ services:
       - ./backend:/app/backend
       - dev_backend_node_modules:/app/backend/node_modules
       # Baza dev w wolumenie, nie w bind mouncie: przy Docker Desktop SQLite (WAL) otwarte jednocześnie z hosta
-      # i z kontenera gubi zapisy. Podgląd: bun run dev:prisma:studio lub bun run dev:db:snapshot
+      # i z kontenera gubi zapisy. Podgląd: bun run dev:prisma:studio lub bun run db:snapshot
       - dev_backend_data:/app/backend/data
 
   frontend-dev:

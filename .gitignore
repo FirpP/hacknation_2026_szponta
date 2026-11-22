@@ -3,4 +3,3 @@
 .env
 backend/prisma/generated/
 backend/prisma/*.db*
-!backend/data/dev-snapshot.db

@@ -15,8 +15,6 @@
     "dev:prisma:generate": "bun --cwd=backend run dev:prisma:generate",
     "dev:prisma:migrate": "bun --cwd=backend run dev:prisma:migrate",
     "dev:prisma:studio": "bun --cwd=backend run dev:prisma:studio",
-    "dev:db:snapshot": "bun --cwd=backend run dev:db:snapshot",
-    "dev:db:restore": "bun --cwd=backend run dev:db:restore",
     "scrape:ncbr": "docker compose --profile dev exec backend-dev bun run scrape:ncbr",
     "scrape:ppm": "docker compose --profile dev exec backend-dev bun run scrape:ppm",
     "scrape:baztol": "docker compose --profile dev exec backend-dev bun run scrape:baztol",
@@ -31,8 +29,7 @@
     "cron": "docker compose --profile dev exec backend-dev bun run cron",
     "cron:detached": "docker compose --profile dev exec -d backend-dev bun run cron",
     "db:migrate": "docker compose --profile dev exec backend-dev bun run db:migrate",
-    "prod:db:snapshot": "bun --cwd=backend run prod:db:snapshot",
-    "prod:db:restore": "bun --cwd=backend run prod:db:restore",
+    "db:snapshot": "bun --cwd=backend run db:snapshot",
     "docker:dev": "docker compose --profile dev up --build",
     "docker:prod": "docker compose --profile prod up -d --build"
   }

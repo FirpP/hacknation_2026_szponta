@@ -20,9 +20,13 @@ RUN bun install --frozen-lockfile
 # ---------- dev (osobne kontenery, osobne logi) ----------
 # Kod przychodzi z bind mounta. node_modules z obrazu zasilają wolumen przy pierwszym uruchomieniu,
 # a start i tak robi bun install, żeby dociągnąć paczki dodane później.
+# Baza startowa (snapshot) jest wgrywana do obrazu przy buildzie, poza /app/backend/data, bo ten katalog jest wolumenem.
+# Przy starcie db:restore wgrywa ją do dev.db tylko wtedy, gdy baza nie istnieje albo jest pusta.
 FROM deps-backend AS dev-backend
+COPY backend/data/snapshot.db /app/seed/snapshot.db
+ENV SNAPSHOT_PATH=/app/seed/snapshot.db
 EXPOSE 3000
-CMD ["sh", "-c", "bun install && bunx --bun prisma generate && bunx --bun prisma migrate deploy && exec bun run dev"]
+CMD ["sh", "-c", "bun install && bunx --bun prisma generate && bun run db:restore && bunx --bun prisma migrate deploy && exec bun run dev"]
 
 FROM deps-frontend AS dev-frontend
 EXPOSE 8080
@@ -34,9 +38,14 @@ ENV NODE_ENV=production
 COPY backend/ ./
 # generate nie łączy się z bazą, ale prisma.config.ts wymaga zmiennej DATABASE_URL (docelowy jest ustawiany w runtime)
 RUN DATABASE_URL=file:./data/prod.db bunx --bun prisma generate
+# Baza startowa (snapshot) poza /app/backend/data, bo ten katalog jest wolumenem i zasłania pliki z obrazu.
+# Kopię z COPY backend/ usuwamy, żeby Docker nie wypełnił nią pustego wolumenu (zbędne 5 MB obok bazy).
+RUN rm -f /app/backend/data/snapshot.db
+COPY backend/data/snapshot.db /app/seed/snapshot.db
+ENV SNAPSHOT_PATH=/app/seed/snapshot.db
 EXPOSE 3000
-# Migracje na starcie, potem serwer bez hot reload
-CMD ["sh", "-c", "bunx --bun prisma migrate deploy && exec bun run src/index.ts"]
+# Na starcie: wgranie snapshotu do pustej bazy (istniejącej nie rusza), migracje, serwer bez hot reload
+CMD ["sh", "-c", "bun run db:restore && bunx --bun prisma migrate deploy && exec bun run src/index.ts"]
 
 # ---------- build frontendu ----------
 FROM deps-frontend AS build
