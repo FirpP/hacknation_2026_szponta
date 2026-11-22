@@ -174,6 +174,6 @@ Projekt jest udostępniany na licencji **EUPL-1.2** (Licencja Publiczna Unii Eur
 
 Licensed under the EUPL
 
-Autorzy (wg historii repozytorium): Najdz3l, FirpP.
+Autorzy (wg historii repozytorium): Najdz3l, FirpP, Sachiko7552, yDarknessGuy, GRATIZZZ1311, pelus2115.
 
 Zależności bezpośrednie (Hono, Prisma, React, TanStack Query, node-cron i inne) są na licencjach MIT, Apache-2.0, ISC i BSD-2-Clause. Font Lato jest ładowany z Google Fonts (SIL Open Font License) i nie jest dołączony do repozytorium. Treści ze źródeł publicznych są cytowane z odnośnikiem do oryginału, a scrapery respektują `robots.txt`.
