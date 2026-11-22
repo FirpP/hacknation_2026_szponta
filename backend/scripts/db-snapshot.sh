@@ -5,7 +5,7 @@
 # VACUUM INTO wykonuje się w kontenerze, więc uwzględnia też dane jeszcze nieprzeniesione z pliku WAL.
 #
 # Użycie: sh scripts/db-snapshot.sh dev|prod   ->  backend/data/<dev|prod>-snapshot.db
-# dev-snapshot.db jest w repo (bez tabeli Employee), prod-snapshot.db jest w .gitignore.
+# dev-snapshot.db jest w repo (wgrywanie: db-restore.sh), prod-snapshot.db jest w .gitignore.
 # Migawka się nie odświeża - uruchom skrypt ponownie po zmianach. Zmiany w migawce nie wracają do bazy.
 set -e
 
@@ -24,11 +24,6 @@ dc() { docker compose --profile "$PROFILE" "$@"; }
 
 dc exec -T "$SERVICE" sh -c "rm -f /tmp/snap.db"
 dc exec -T "$SERVICE" bun -e "import { Database } from 'bun:sqlite'; new Database('$DB', { readonly: true }).run(\"VACUUM INTO '/tmp/snap.db'\")"
-# Migawka dev jest w repo (do wgrania przez db-restore.sh), więc bez kont pracowników i hashy haseł.
-# VACUUM usuwa też zwolnione strony, w których hash mógłby zostać.
-if [ "$PROFILE" = dev ]; then
-  dc exec -T "$SERVICE" bun -e "import { Database } from 'bun:sqlite'; const db = new Database('/tmp/snap.db'); db.run('DELETE FROM Employee'); db.run('VACUUM')"
-fi
 dc cp "$SERVICE:/tmp/snap.db" "$OUT"
 dc exec -T "$SERVICE" sh -c "rm -f /tmp/snap.db"
 

@@ -1,4 +1,6 @@
-# Template for Hacknation 2026
+# Radar Innowacji
+
+Prototyp na wyzwanie Podkarpackiego Centrum Innowacji (HackNation 2026): robot zbiera istniejące innowacje z publicznych źródeł, model AI opisuje je jako karty z oceną potencjału i cytatami ze źródeł, a strona pozwala je przeszukiwać i filtrować. Aplikacja jest publiczna i tylko do odczytu.
 
 Jeden runtime (Bun) w całym projekcie. Backend (Hono + Prisma + SQLite) i frontend (React + Vite) to osobne pakiety, każdy z własnym `package.json` i `bun.lock`. Jeden `Dockerfile` i jeden `docker-compose.yml` obsługują development i produkcję (profile `dev` i `prod`).
 
@@ -9,10 +11,10 @@ backend/    API: Hono + Prisma (SQLite) + zod, moduły w src/api/<moduł>/ (rout
 frontend/   React + Vite + TanStack Query (alias "@" wskazuje na src/), hooki per funkcja w src/features/<nazwa>/
 nginx/      konfiguracja Nginx używana tylko na produkcji
 Dockerfile  jeden plik, cele: dev-backend, dev-frontend, backend, web
-.github/    CI: typecheck, lint, format, testy, cykle importów i build frontu na każdy push/PR
+.github/    CODEOWNERS
 ```
 
-**Po sklonowaniu templatki pod nowy projekt:** nazwa projektu Compose (prefiks kontenerów i wolumenów, w tym bazy) to nazwa katalogu, więc dwa klony na jednej maszynie się nie gryzą. Własną nazwę ustawisz w `.env`: `COMPOSE_PROJECT_NAME=moj-projekt`. Zmień też `<title>` w `frontend/index.html`.
+Nazwa projektu Compose (prefiks kontenerów i wolumenów, w tym bazy) to nazwa katalogu, więc dwa klony na jednej maszynie się nie gryzą. Własną nazwę ustawisz w `.env`: `COMPOSE_PROJECT_NAME=moj-projekt`.
 
 ## Development
 
@@ -25,12 +27,11 @@ docker compose --profile dev up --build   # lub: bun run docker:dev
 - Backend i frontend to osobne kontenery (`backend-dev` i `frontend-dev`), więc mają osobne logi: `docker compose --profile dev logs -f backend-dev` lub `frontend-dev` (w Docker Desktop kliknij kontener w grupie o nazwie projektu). Backend loguje każde żądanie (metoda, ścieżka, status, czas); błędy 4xx to jedna linia, 5xx ze stackiem.
 - Przy starcie każdy kontener instaluje nowe paczki, a backend dodatkowo generuje klienta Prisma i stosuje migracje.
 
-Zmienne środowiskowe są opcjonalne w developmencie. Jeśli chcesz coś nadpisać: `cp .env.example .env` (po utworzeniu `.env` uruchom kontenery ponownie, bo Docker czyta go przy tworzeniu kontenera).
+Zmienne środowiskowe są opcjonalne (analiza LLM potrzebuje `LLM_*`). Jeśli chcesz coś nadpisać: `cp .env.example .env` (po utworzeniu `.env` uruchom kontenery ponownie, bo Docker czyta go przy tworzeniu kontenera).
 
 Prisma (z katalogu głównego, polecenia wykonują się w kontenerze `backend-dev`):
 
 ```sh
-bun run dev:prisma:seed      # dane przykładowe
 bun run dev:prisma:migrate   # nowa migracja po zmianie schema.prisma
 bun run dev:prisma:generate  # klient Prisma po zmianie schema.prisma (bez restartu kontenera)
 bun run dev:prisma:studio    # podgląd i edycja danych: http://localhost:5555 (Ctrl+C kończy)
@@ -42,16 +43,7 @@ bun run dev:db:restore       # wgranie backend/data/dev-snapshot.db (albo podane
 
 **Baza dev leży w wolumenie Dockera** (`/app/backend/data/dev.db` w kontenerze), a nie w katalogu repo. **Nie otwieraj jej z hosta na żywo.** Przy Docker Desktop kontener działa w VM, a SQLite w trybie WAL wymaga pamięci współdzielonej i blokad plików między wszystkimi procesami. Podgląd z hosta (np. rozszerzenie SQLite w VS Code) widziałby wtedy stare dane i mógłby cofnąć zapisy aplikacji. Do przeglądania służy Prisma Studio uruchamiane w kontenerze albo migawka. Zmiany w migawce nie wracają do bazy.
 
-Na świeżym klonie wystarczy `docker compose --profile dev up --build`, bo przy każdym starcie backend sam generuje klienta Prisma i stosuje istniejące migracje. Ręcznie potrzebny jest tylko seed. Uwaga: seed jest tylko developerski (na produkcji odmawia działania). Tworzy konto pracownika: z `SEED_EMPLOYEE_USERNAME`/`SEED_EMPLOYEE_PASSWORD` z `.env`, a bez nich **`admin`/`admin`**. Ponowny seed tylko aktualizuje hasło. Logowanie: http://localhost:8080/login, potem `/panel`.
-
-### Nowy moduł API
-
-```sh
-bun run new:module products              # model Product (liczba pojedyncza zgadywana z nazwy)
-bun run new:module people --model Person # nazwa modelu podana wprost
-```
-
-Generuje `backend/src/api/<nazwa>/` (GET lista i po id publicznie, POST i DELETE za `requireAuth`, docs, test serwisu), rejestruje router w `src/api/api.ts` i dopisuje model (`id`, `name`, `createdAt`) do `prisma/schema.prisma`. Potem dostosuj pola, uruchom `bun run dev:prisma:migrate` i `bun run gen:api`.
+Na świeżym klonie wystarczy `docker compose --profile dev up --build`, bo przy każdym starcie backend sam generuje klienta Prisma i stosuje istniejące migracje. Baza jest wtedy pusta: karty wgrasz z migawki w repo przez `bun run dev:db:restore`.
 
 Błędy Prismy nie wymagają obsługi w serwisach: `errorHandler` zamienia duplikat pola `@unique` (P2002) na 409 `CONFLICT` z polem w `details`, a brak rekordu przy update/delete (P2025) na 404.
 
@@ -63,7 +55,7 @@ Aplikacja działa tylko w Dockerze, ale żeby edytor miał podpowiedzi TypeScrip
 bun run install:all
 ```
 
-Skrypty z katalogu głównego: `bun run lint | format | format:check | typecheck | test:backend | check:circular`, a `bun run check` uruchamia je wszystkie (to samo robi CI). Testy (`bun test`) nie wymagają bazy, Dockera ani zmiennych środowiska. Typecheck i lint potrzebują wygenerowanego klienta Prisma. Powstaje on na hoście sam po pierwszym `docker compose --profile dev up`, bo katalog `backend/` jest zamontowany w kontenerze. Bez Dockera wygeneruj go ręcznie:
+Skrypty z katalogu głównego: `bun run lint | format | format:check | typecheck | test:backend | check:circular`, a `bun run check` uruchamia je wszystkie. Testy (`bun test`) nie wymagają bazy, Dockera ani zmiennych środowiska. Typecheck i lint potrzebują wygenerowanego klienta Prisma. Powstaje on na hoście sam po pierwszym `docker compose --profile dev up`, bo katalog `backend/` jest zamontowany w kontenerze. Bez Dockera wygeneruj go ręcznie:
 
 ```sh
 cd backend && DATABASE_URL=file:./prisma/dev.db bunx --bun prisma generate
@@ -75,7 +67,7 @@ Pipeline działa tak: scraper → `RawRecord` (surowy fragment źródła, `conte
 
 ```sh
 bun run db:migrate                 # migracje (ScrapeRun, RawRecord, InnovationCard)
-bun run db:seed-demo               # 6 kart demo z prawdziwych fixture'ów: offline, bez klucza LLM
+bun run dev:db:restore             # gotowe karty z migawki backend/data/dev-snapshot.db, bez scrapowania i LLM
 bun run scrape:ncbr --limit 5      # jedno źródło (ncbr|baztol|epo|uprp|ppm|pbn|pan|interreg), --offline = fixture
 bun run scrape:all                 # wszystkie źródła, tabela statusów
 bun run analyze --limit 3          # karty dla nowych/zmienionych rekordów (--source ncbr, --retry-failed)
@@ -100,7 +92,7 @@ bun run cron                       # harmonogram co 24 h (RADAR_CRON), --now = p
 
 ## Deploy na Droplet (DigitalOcean)
 
-Produkcja to profil `prod`: Nginx na porcie 80 serwuje zbudowany frontend i przekazuje `/api` do backendu. Backend nie jest wystawiony na zewnątrz, a baza SQLite (tryb WAL) leży w wolumenie `<projekt>_backend_data`. Nginx przyjmuje body do 20 MB (uploady) i przepuszcza WebSockety oraz SSE pod `/api`. `index.html` jest zawsze rewalidowany, więc po redeployu przeglądarka nie trzyma starej wersji. Całość mieści się w kilkudziesięciu MB RAM (backend ok. 50 MB, nginx ok. 20 MB).
+Produkcja to profil `prod`: Nginx na porcie 80 serwuje zbudowany frontend i przekazuje `/api` do backendu. Backend nie jest wystawiony na zewnątrz, a baza SQLite (tryb WAL) leży w wolumenie `<projekt>_backend_data`. `index.html` jest zawsze rewalidowany, więc po redeployu przeglądarka nie trzyma starej wersji. Całość mieści się w kilkudziesięciu MB RAM (backend ok. 50 MB, nginx ok. 20 MB).
 
 1. Utwórz Droplet z obrazem **Docker on Ubuntu** (Marketplace) i zaloguj się przez SSH.
 2. Przy 2 GB RAM dodaj swap na czas budowania obrazów (`vite build` i `bun install` chwilowo potrzebują więcej pamięci):
@@ -108,16 +100,15 @@ Produkcja to profil `prod`: Nginx na porcie 80 serwuje zbudowany frontend i prze
    fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
    echo '/swapfile none swap sw 0 0' >> /etc/fstab
    ```
-3. Sklonuj repozytorium i utwórz `.env` z `.env.example`. **`JWT_SECRET` jest wymagany na produkcji** (min. 32 znaki, np. `openssl rand -hex 32`): bez niego backend nie wystartuje. Ustaw też `FRONTEND_URL=http://<IP-Dropletu>` oraz **`COOKIE_SECURE=false`**, dopóki aplikacja działa po HTTP: przeglądarki nie zapisują cookie z flagą `Secure` ze strony bez HTTPS, więc bez tej zmiennej logowanie nie zadziała. Żeby utworzyć konto pracownika, podaj `SEED_EMPLOYEE_USERNAME` i `SEED_EMPLOYEE_PASSWORD` (na produkcji hasło musi mieć min. 12 znaków i nie może być domyślne, inaczej skrypt odmówi).
+3. Sklonuj repozytorium. `.env` jest opcjonalny: utwórz go z `.env.example`, jeśli produkcja ma też uruchamiać analizę LLM (`LLM_*`) albo potrzebujesz innego portu (`APP_PORT`).
 4. Zbuduj i uruchom:
    ```sh
    docker compose --profile prod up -d --build
    ```
-5. Konto pracownika z `.env` (nie uruchamia się automatycznie; ponowne uruchomienie jest bezpieczne i tylko aktualizuje hasło):
+5. Wgraj karty z migawki w repo (bez scrapowania i kosztów LLM; potrzebny Bun na serwerze, inaczej patrz `backend/scripts/db-restore.sh`):
    ```sh
-   bun run prod:employee
+   bun run prod:db:restore data/dev-snapshot.db
    ```
-   Skrypt to `backend/prisma/seed/seed-employee.ts`: tworzy tylko konto z `SEED_EMPLOYEE_USERNAME` i `SEED_EMPLOYEE_PASSWORD` (bez tych zmiennych kończy się błędem) i nie dotyka innych danych. Bez Buna na serwerze: `docker compose --profile prod exec backend bun prisma/seed/seed-employee.ts`. Dane przykładowe (`prisma db seed`) są tylko na dev.
 6. Firewall:
    ```sh
    ufw allow OpenSSH && ufw allow 80 && ufw enable
@@ -148,11 +139,11 @@ Tylko w developmencie (`NODE_ENV` inne niż `production`):
 
 Spec generuje się ze schematów zod. Trasa bez opisu nie pojawia się w dokumentacji. Żeby dodać nową:
 
-1. W module utwórz/rozszerz `docs/<moduł>.docs.ts` i opisz trasę przez `describeRoute` (wzór: `backend/src/api/auth/docs/auth.docs.ts`).
+1. W module utwórz/rozszerz `docs/<moduł>.docs.ts` i opisz trasę przez `describeRoute` (wzór: `backend/src/api/cards/docs/cards.docs.ts`).
 2. Schemat odpowiedzi podaj przez `resolver(...)`. Schemat z `.meta({ ref: "Nazwa" })` trafi do `components.schemas`.
-3. Dodaj opis jako middleware w routerze: `router.post("/logout", logoutDocs, handler)`.
+3. Dodaj opis jako middleware w routerze: `cardsRouter.get("/", listCardsDocs, validate("query", CardsQuerySchema), handler)`.
 
-Typy (`Employee`, `LoginBody`) wynikają ze schematów zod (`z.infer` w `types/`), więc schemat jest jedynym źródłem prawdy dla specu i kodu. Format błędów (`{ error: { code, message, details? } }`) jest opisany w `ErrorResponseSchema` i przetestowany w `backend/src/middleware/error-handler.test.ts`.
+Typy (`CardSummary`, `CardDetail`, `Stats`) wynikają ze schematów zod (`z.infer` w `validators/`), więc schemat jest jedynym źródłem prawdy dla specu i kodu. Format błędów (`{ error: { code, message, details? } }`) jest opisany w `ErrorResponseSchema` i przetestowany w `backend/src/middleware/error-handler.test.ts`.
 
 ### Typy API na froncie
 
@@ -162,11 +153,10 @@ Frontend nie przepisuje typów ręcznie, tylko generuje je ze speca OpenAPI do `
 bun run gen:api   # pobiera http://localhost:3000/api/v1/openapi.json
 ```
 
-Użycie: `type Employee = components["schemas"]["Employee"]` (wzór: `frontend/src/lib/types/auth.types.ts`). Do `components.schemas` trafiają tylko schematy z `.meta({ ref: "Nazwa" })`.
+Użycie: `type CardSummary = components["schemas"]["CardSummary"]` (wzór: `frontend/src/lib/types/cards.types.ts`). Do `components.schemas` trafiają tylko schematy z `.meta({ ref: "Nazwa" })`.
 
 ## Frontend: wzorce
 
-- **Zapytania** idą przez `api` z `src/lib/api-client.ts` (JSON albo `FormData` przy uploadzie, cookie sesji, błędy jako `ApiError` z `status`, `code` i `details`). Hooki TanStack Query trzymaj w `src/features/<nazwa>/` razem z fabryką kluczy (wzór: `features/auth/auth.hooks.ts`: `useMe`, `useLogin`, `useLogout`).
-- **Auth:** `useMe()` zwraca zalogowanego pracownika albo `null`, a `useLogin()` i `useLogout()` to mutacje (`features/auth/auth.hooks.ts`). Strony chronione wkładasz pod `<Route element={<RequireAuth />}>` w `App.tsx`. Bez sesji następuje przekierowanie na `/login` i powrót po zalogowaniu. 401 z dowolnego zapytania czyści sesję w cache, więc `RequireAuth` odsyła na logowanie.
-- **Formularze:** `<Input label name error={fieldError(mutation.error, "email")} />` pokazuje błąd pola z 422/409, a `<FormError error={mutation.error} />` komunikat ogólny (wzór: `pages/Login.tsx`).
+- **Zapytania** idą przez `api.get` z `src/lib/api-client.ts` (API jest tylko do odczytu; błędy jako `ApiError` z `status`, `code` i `details`). Hooki TanStack Query trzymaj w `src/features/<nazwa>/` razem z fabryką kluczy (wzór: `features/cards/cards.hooks.ts` i `cards.keys.ts`).
+- **Strony:** `/` (opis i statystyki), `/radar` (lista i widok radaru, filtry w URL), `/karty/:id` (karta z cytatami). Style i tokeny kolorów są w `src/styles/global.css`.
 - `ErrorBoundary` zamiast białego ekranu przy błędzie renderu, React Query Devtools (ikonka w rogu) tylko w dev.
