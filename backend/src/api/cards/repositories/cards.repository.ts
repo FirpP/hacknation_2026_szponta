@@ -1,6 +1,6 @@
 import prisma from "@/prisma-client";
 import type { Prisma } from "../../../../prisma/generated/client";
-import type { CardWithRecord, ICardsRepository } from "@api/cards/types/cards.types";
+import type { CardStatsRow, CardWithRecord, ICardsRepository } from "@api/cards/types/cards.types";
 import type { CardsQuery, RunsQuery } from "@api/cards/validators/cards.validator";
 
 const RECORD_SELECT = { select: { source: true, firstSeenAt: true, fetchedAt: true } } as const;
@@ -55,5 +55,23 @@ export class CardsRepository implements ICardsRepository {
       orderBy: { id: "desc" },
       take: query.limit,
     });
+  }
+
+  // Setki kart w demo: agregujemy w JS (liczenie cytatów wymaga odczytu JSON evidence)
+  async findStatsRows(): Promise<{ rows: CardStatsRow[]; lastFetchedAt: Date | null }> {
+    const [rows, latest] = await prisma.$transaction([
+      prisma.innovationCard.findMany({
+        select: {
+          domain: true,
+          implementationStatus: true,
+          isInnovation: true,
+          sourceName: true,
+          evidence: true,
+          rawRecord: { select: { source: true } },
+        },
+      }),
+      prisma.rawRecord.aggregate({ _max: { fetchedAt: true } }),
+    ]);
+    return { rows, lastFetchedAt: latest._max.fetchedAt };
   }
 }

@@ -16,4 +16,8 @@ export class CardsController {
   async listRuns(c: Context, query: RunsQuery) {
     return c.json(await this.service.listRuns(query), 200);
   }
+
+  async getStats(c: Context) {
+    return c.json(await this.service.getStats(), 200);
+  }
 }

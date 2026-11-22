@@ -46,6 +46,9 @@ const createService = (overrides: Partial<ICardsService> = {}): ICardsService =>
   listCards: mock(async () => page),
   getCard: mock(async () => detail),
   listRuns: mock(async () => []),
+  getStats: mock(async () => {
+    throw new Error("nieużywane");
+  }),
   ...overrides,
 });
 

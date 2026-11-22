@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { CardsController } from "@api/cards/controllers/cards.controller";
-import { getCardDocs, listCardsDocs, listRunsDocs } from "@api/cards/docs/cards.docs";
+import { getCardDocs, getStatsDocs, listCardsDocs, listRunsDocs } from "@api/cards/docs/cards.docs";
 import { CardIdParamsSchema, CardsQuerySchema, RunsQuerySchema } from "@api/cards/validators/cards.validator";
 import { validate } from "@middleware/validate";
 import { cardsService } from "@api/cards/cards.container";
@@ -23,3 +23,8 @@ export const runsRouter = new Hono();
 runsRouter.get("/", listRunsDocs, validate("query", RunsQuerySchema), (c) =>
   controller.listRuns(c, c.req.valid("query")),
 );
+
+// /api/v1/stats
+export const statsRouter = new Hono();
+
+statsRouter.get("/", getStatsDocs, (c) => controller.getStats(c));
