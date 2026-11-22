@@ -35,7 +35,10 @@ bun run dev:prisma:migrate   # nowa migracja po zmianie schema.prisma
 bun run dev:prisma:generate  # klient Prisma po zmianie schema.prisma (bez restartu kontenera)
 bun run dev:prisma:studio    # podgląd i edycja danych: http://localhost:5555 (Ctrl+C kończy)
 bun run dev:db:snapshot      # kopia bazy do backend/data/dev-snapshot.db (do otwarcia w VS Code/DBeaver)
+bun run dev:db:restore       # wgranie backend/data/dev-snapshot.db (albo podanego pliku) z powrotem do bazy w Dockerze
 ```
+
+**Przeniesienie gotowej bazy bez ponownego scrapowania** (np. na inny komputer albo na produkcję): `dev:db:snapshot` na źródłowej maszynie, skopiuj plik `backend/data/dev-snapshot.db`, potem na docelowej przy działającym profilu `bun run dev:db:restore` (dev) albo `bun run prod:db:restore data/dev-snapshot.db` (prod; ścieżka względem `backend/`). Skrypt `backend/scripts/db-restore.sh` sprawdza plik (integralność, tabele Radaru), robi kopię obecnej bazy w wolumenie (`<db>.before-restore-<data>.db`), na chwilę zatrzymuje backend, podmienia bazę razem z usunięciem starych plików `-wal`/`-shm` i uruchamia backend, który stosuje brakujące migracje. Odmawia, gdy trwa scrape lub analiza (`radar.lock`).
 
 **Baza dev leży w wolumenie Dockera** (`/app/backend/data/dev.db` w kontenerze), a nie w katalogu repo. **Nie otwieraj jej z hosta na żywo.** Przy Docker Desktop kontener działa w VM, a SQLite w trybie WAL wymaga pamięci współdzielonej i blokad plików między wszystkimi procesami. Podgląd z hosta (np. rozszerzenie SQLite w VS Code) widziałby wtedy stare dane i mógłby cofnąć zapisy aplikacji. Do przeglądania służy Prisma Studio uruchamiane w kontenerze albo migawka. Zmiany w migawce nie wracają do bazy.
 
