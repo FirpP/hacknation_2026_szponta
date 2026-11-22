@@ -1,6 +1,7 @@
 {
   "name": "hacknation-template",
   "private": true,
+  "license": "EUPL-1.2",
   "description": "Skrypty pomocnicze. Backend i frontend to osobne pakiety (własne package.json i bun.lock).",
   "scripts": {
     "install:all": "bun --cwd=backend install && bun --cwd=frontend install",

@@ -167,3 +167,13 @@ Użycie: `type CardSummary = components["schemas"]["CardSummary"]` (wzór: `fron
 - **Zapytania** idą przez `api.get` z `src/lib/api-client.ts` (API jest tylko do odczytu; błędy jako `ApiError` z `status`, `code` i `details`). Hooki TanStack Query trzymaj w `src/features/<nazwa>/` razem z fabryką kluczy (wzór: `features/cards/cards.hooks.ts` i `cards.keys.ts`).
 - **Strony:** `/` (opis i statystyki), `/radar` (lista i widok radaru, filtry w URL), `/karty/:id` (karta z cytatami). Style i tokeny kolorów są w `src/styles/global.css`.
 - `ErrorBoundary` zamiast białego ekranu przy błędzie renderu, React Query Devtools (ikonka w rogu) tylko w dev.
+
+## Licencja i autorzy
+
+Projekt jest udostępniany na licencji **EUPL-1.2** (Licencja Publiczna Unii Europejskiej, wersja 1.2), zgodnie z regulaminem zadania: pełny tekst w pliku [LICENSE](LICENSE).
+
+Licensed under the EUPL
+
+Autorzy (wg historii repozytorium): Najdz3l, FirpP.
+
+Zależności bezpośrednie (Hono, Prisma, React, TanStack Query, node-cron i inne) są na licencjach MIT, Apache-2.0, ISC i BSD-2-Clause. Font Lato jest ładowany z Google Fonts (SIL Open Font License) i nie jest dołączony do repozytorium. Treści ze źródeł publicznych są cytowane z odnośnikiem do oryginału, a scrapery respektują `robots.txt`.
