@@ -38,6 +38,13 @@ const detail: CardDetail = {
   },
   analysis: { model: "deepseek-flash", promptVersion: "card-v2" },
   analyzedAt: "2026-11-21T00:00:00.000Z",
+  recommendation: {
+    path: "PILOT",
+    reasons: ["status wdrożenia: PROTOTYPE"],
+    audiences: [],
+    metrics: [],
+    basis: "ESTIMATED",
+  },
 };
 
 const page: CardsPage = { items: [], total: 0, page: 1, pageSize: 20 };
@@ -45,10 +52,7 @@ const page: CardsPage = { items: [], total: 0, page: 1, pageSize: 20 };
 const createService = (overrides: Partial<ICardsService> = {}): ICardsService => ({
   listCards: mock(async () => page),
   getCard: mock(async () => detail),
-  listRuns: mock(async () => []),
-  getStats: mock(async () => {
-    throw new Error("nieużywane");
-  }),
+  getSimilarCards: mock(async () => []),
   ...overrides,
 });
 

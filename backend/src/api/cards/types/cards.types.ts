@@ -1,32 +1,25 @@
-import type { InnovationCard, ScrapeRun } from "../../../../prisma/generated/client";
-import type {
-  CardDetail,
-  CardsPage,
-  CardsQuery,
-  RunsQuery,
-  ScrapeRunDto,
-  StatsDto,
-} from "@api/cards/validators/cards.validator";
+import type { InnovationCard } from "../../../../prisma/generated/client";
+import type { CardDetail, CardsPage, CardsQuery, SimilarCardDto } from "@api/cards/validators/cards.validator";
 
 export type CardWithRecord = InnovationCard & {
   rawRecord: { source: string; firstSeenAt: Date; fetchedAt: Date };
 };
 
-export type CardStatsRow = Pick<
+export type SimilarityRow = Pick<
   InnovationCard,
-  "domain" | "implementationStatus" | "isInnovation" | "sourceName" | "evidence"
-> & { rawRecord: { source: string } };
+  "id" | "title" | "description" | "applicationArea" | "domain" | "implementationStatus" | "sourceName" | "analyzedAt"
+>;
 
 export interface ICardsRepository {
   findPage(query: CardsQuery): Promise<{ rows: CardWithRecord[]; total: number }>;
+  /** Wszystkie karty spełniające filtry SQL, w kolejności sortowania (do filtrów liczonych w JS) */
+  findAll(query: CardsQuery): Promise<CardWithRecord[]>;
   findById(id: number): Promise<CardWithRecord | null>;
-  findRuns(query: RunsQuery): Promise<ScrapeRun[]>;
-  findStatsRows(): Promise<{ rows: CardStatsRow[]; lastFetchedAt: Date | null }>;
+  findSimilarityRows(): Promise<SimilarityRow[]>;
 }
 
 export interface ICardsService {
   listCards(query: CardsQuery): Promise<CardsPage>;
   getCard(id: number): Promise<CardDetail>;
-  listRuns(query: RunsQuery): Promise<ScrapeRunDto[]>;
-  getStats(): Promise<StatsDto>;
+  getSimilarCards(id: number): Promise<SimilarCardDto[]>;
 }

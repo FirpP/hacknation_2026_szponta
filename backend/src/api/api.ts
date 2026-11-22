@@ -3,7 +3,9 @@ import { openAPIRouteHandler } from "hono-openapi";
 import { swaggerUI } from "@hono/swagger-ui";
 import { ENV } from "@lib/constants/env";
 
-import { cardsRouter, runsRouter, statsRouter } from "@api/cards/routes/cards.routes";
+import { cardsRouter } from "@api/cards/routes/cards.routes";
+import { runsRouter } from "@api/runs/routes/runs.routes";
+import { statsRouter } from "@api/stats/routes/stats.routes";
 
 // /api/v1
 export const router = new Hono();

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { DOMAINS, FIELD_BASIS, IMPLEMENTATION_STATUSES } from "@/analysis/card.schema";
+import { AUDIENCES, PATHS } from "@/analysis/recommend";
 
 // ---------- wejście ----------
 
@@ -16,6 +17,8 @@ export const CardsQuerySchema = z
       .transform((v) => v === "true")
       .optional()
       .describe("Czy rekord jest innowacją wg Oslo Manual (szacunek modelu)"),
+    audience: z.enum(AUDIENCES).optional().describe("Grupa odbiorców, dla której karta jest rekomendowana"),
+    path: z.enum(PATHS).optional().describe("Rekomendowana ścieżka dalszego rozwoju"),
     sort: z
       .enum(["analyzedAt", "innovationScore", "applicationPotentialScore", "credibilityScore", "trl"])
       .default("analyzedAt"),
@@ -31,12 +34,6 @@ export type CardsQuery = z.infer<typeof CardsQuerySchema>;
 
 export const CardIdParamsSchema = z.object({ id: z.coerce.number().int().positive() });
 
-export const RunsQuerySchema = z.object({
-  source: z.string().trim().min(1).max(50).optional(),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
-});
-export type RunsQuery = z.infer<typeof RunsQuerySchema>;
-
 // ---------- wyjście ----------
 
 const ScoreSchema = z.object({ score: z.number().int().min(1).max(5), rationale: z.string() });
@@ -48,6 +45,16 @@ export const EvidenceSchema = z
     verified: z.boolean().describe("Czy cytat występuje w surowym rekordzie (sprawdzane automatycznie)"),
   })
   .meta({ ref: "Evidence" });
+
+export const RecommendationSchema = z
+  .object({
+    path: z.enum(PATHS),
+    reasons: z.array(z.string()).describe("Reguły, które zdecydowały o ścieżce (sprawdzalne na karcie)"),
+    audiences: z.array(z.enum(AUDIENCES)),
+    metrics: z.array(z.string()).describe("Mierniki, po których poznamy, że ścieżka zadziałała"),
+    basis: z.literal("ESTIMATED"),
+  })
+  .meta({ ref: "Recommendation", description: "Rekomendowana ścieżka i odbiorcy (reguły deterministyczne, szacunek)" });
 
 export const CardSummarySchema = z
   .object({
@@ -63,6 +70,7 @@ export const CardSummarySchema = z
     fieldBasis: z.record(z.string(), z.enum(FIELD_BASIS)).describe("CONFIRMED = wprost w źródle, ESTIMATED = szacunek"),
     source: z.object({ id: z.string(), name: z.string(), url: z.string() }),
     analyzedAt: z.iso.datetime(),
+    recommendation: RecommendationSchema,
   })
   .meta({ ref: "CardSummary", description: "Karta innowacji (lista)" });
 export type CardSummary = z.infer<typeof CardSummarySchema>;
@@ -91,33 +99,15 @@ export const CardsPageSchema = z
   .meta({ ref: "CardsPage" });
 export type CardsPage = z.infer<typeof CardsPageSchema>;
 
-export const ScrapeRunSchema = z
+export const SimilarCardSchema = z
   .object({
     id: z.number().int(),
-    source: z.string(),
-    status: z.enum(["RUNNING", "SUCCESS", "PARTIAL", "FAILED", "SKIPPED"]),
-    startedAt: z.iso.datetime(),
-    finishedAt: z.iso.datetime().nullable(),
-    itemsFetched: z.number().int(),
-    itemsNew: z.number().int(),
-    itemsChanged: z.number().int(),
-    error: z.string().nullable(),
+    title: z.string(),
+    domain: z.enum(DOMAINS),
+    implementationStatus: z.enum(IMPLEMENTATION_STATUSES),
+    sourceName: z.string(),
+    score: z.number().describe("Podobieństwo cosinusowe TF-IDF (0-1) tytułu, opisu i obszaru zastosowania"),
+    possibleDuplicate: z.boolean().describe("Prawie identyczna treść albo tytuł: możliwe dublowanie"),
   })
-  .meta({ ref: "ScrapeRun", description: "Uruchomienie scrapera" });
-export type ScrapeRunDto = z.infer<typeof ScrapeRunSchema>;
-
-const countsOf = <T extends readonly [string, ...string[]]>(values: T) =>
-  z.object(Object.fromEntries(values.map((v) => [v, z.number().int()])) as Record<T[number], z.ZodNumber>);
-
-export const StatsSchema = z
-  .object({
-    totalCards: z.number().int(),
-    innovations: z.number().int().describe("Karty z isInnovation = true (szacunek modelu)"),
-    byDomain: countsOf(DOMAINS),
-    byStatus: countsOf(IMPLEMENTATION_STATUSES),
-    sources: z.array(z.object({ id: z.string(), name: z.string(), cards: z.number().int() })),
-    evidence: z.object({ total: z.number().int(), verified: z.number().int() }),
-    lastFetchedAt: z.iso.datetime().nullable().describe("Ostatnie pobranie rekordu ze źródła"),
-  })
-  .meta({ ref: "Stats", description: "Podsumowanie bazy kart" });
-export type StatsDto = z.infer<typeof StatsSchema>;
+  .meta({ ref: "SimilarCard", description: "Podobna karta" });
+export type SimilarCardDto = z.infer<typeof SimilarCardSchema>;

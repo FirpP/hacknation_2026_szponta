@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { describeRoute, resolver } from "hono-openapi";
 import { ErrorResponseSchema } from "@lib/errors/error-response.schema";
-import { CardDetailSchema, CardsPageSchema, ScrapeRunSchema, StatsSchema } from "@api/cards/validators/cards.validator";
+import { CardDetailSchema, CardsPageSchema, SimilarCardSchema } from "@api/cards/validators/cards.validator";
 
 const error = (description: string) => ({
   description,
@@ -31,26 +31,17 @@ export const getCardDocs = describeRoute({
   },
 });
 
-// GET /api/v1/runs
-export const listRunsDocs = describeRoute({
+// GET /api/v1/cards/:id/similar
+export const getSimilarCardsDocs = describeRoute({
   tags: ["Radar"],
-  summary: "Ostatnie uruchomienia scraperów (świeżość bazy)",
+  summary: "Podobne karty i możliwe duplikaty (TF-IDF, bez AI)",
   responses: {
     200: {
-      description: "Lista runów, od najnowszego",
-      content: { "application/json": { schema: resolver(z.array(ScrapeRunSchema)) } },
+      description: "Do 5 najbardziej podobnych kart, duplikaty na początku",
+      content: { "application/json": { schema: resolver(z.array(SimilarCardSchema)) } },
     },
-    422: error("Niepoprawne parametry"),
-    500: error("Nieoczekiwany błąd serwera"),
-  },
-});
-
-// GET /api/v1/stats
-export const getStatsDocs = describeRoute({
-  tags: ["Radar"],
-  summary: "Podsumowanie bazy: liczby kart wg obszaru, statusu i źródła, odsetek zweryfikowanych cytatów",
-  responses: {
-    200: { description: "Statystyki", content: { "application/json": { schema: resolver(StatsSchema) } } },
+    404: error("Brak karty"),
+    422: error("Niepoprawne id"),
     500: error("Nieoczekiwany błąd serwera"),
   },
 });
