@@ -21,6 +21,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/cards/{id}/similar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Podobne karty i możliwe duplikaty (TF-IDF, bez AI) */
+        get: operations["getCardsByIdSimilar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/cards/{id}": {
         parameters: {
             query?: never;
@@ -76,6 +93,18 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Rekomendowana ścieżka i odbiorcy (reguły deterministyczne, szacunek) */
+        Recommendation: {
+            /** @enum {string} */
+            path: "COMMERCIALIZATION" | "TRANSFER" | "PILOT" | "FURTHER_RND" | "FIND_PARTNER" | "NOT_APPLICABLE";
+            /** @description Reguły, które zdecydowały o ścieżce (sprawdzalne na karcie) */
+            reasons: string[];
+            audiences: ("INVESTORS" | "PUBLIC_INSTITUTIONS" | "UNIVERSITIES" | "SCHOOLS" | "STARTUPS_COMPANIES" | "INNOVATORS")[];
+            /** @description Mierniki, po których poznamy, że ścieżka zadziałała */
+            metrics: string[];
+            /** @constant */
+            basis: "ESTIMATED";
+        };
         /** @description Karta innowacji (lista) */
         CardSummary: {
             id: number;
@@ -113,6 +142,7 @@ export interface components {
             };
             /** Format: date-time */
             analyzedAt: string;
+            recommendation: components["schemas"]["Recommendation"];
         };
         CardsPage: {
             items: components["schemas"]["CardSummary"][];
@@ -129,6 +159,20 @@ export interface components {
                     message: string;
                 }[];
             };
+        };
+        /** @description Podobna karta */
+        SimilarCard: {
+            id: number;
+            title: string;
+            /** @enum {string} */
+            domain: "TECHNOLOGICAL" | "EDUCATIONAL" | "ADMINISTRATIVE" | "OTHER";
+            /** @enum {string} */
+            implementationStatus: "CONCEPT" | "PROTOTYPE" | "TESTING" | "PILOT" | "IN_USE" | "UNKNOWN";
+            sourceName: string;
+            /** @description Podobieństwo cosinusowe TF-IDF (0-1) tytułu, opisu i obszaru zastosowania */
+            score: number;
+            /** @description Prawie identyczna treść albo tytuł: możliwe dublowanie */
+            possibleDuplicate: boolean;
         };
         Evidence: {
             field: string;
@@ -177,6 +221,7 @@ export interface components {
             };
             /** Format: date-time */
             analyzedAt: string;
+            recommendation: components["schemas"]["Recommendation"];
             isInnovationRationale: string | null;
             evidence: components["schemas"]["Evidence"][];
             analysis: {
@@ -252,6 +297,10 @@ export interface operations {
                 trlMax?: number;
                 /** @description Czy rekord jest innowacją wg Oslo Manual (szacunek modelu) */
                 isInnovation?: "true" | "false";
+                /** @description Grupa odbiorców, dla której karta jest rekomendowana */
+                audience?: "INVESTORS" | "PUBLIC_INSTITUTIONS" | "UNIVERSITIES" | "SCHOOLS" | "STARTUPS_COMPANIES" | "INNOVATORS";
+                /** @description Rekomendowana ścieżka dalszego rozwoju */
+                path?: "COMMERCIALIZATION" | "TRANSFER" | "PILOT" | "FURTHER_RND" | "FIND_PARTNER" | "NOT_APPLICABLE";
                 sort?: "analyzedAt" | "innovationScore" | "applicationPotentialScore" | "credibilityScore" | "trl";
                 order?: "asc" | "desc";
                 page?: number;
@@ -287,6 +336,69 @@ export interface operations {
                 };
             };
             /** @description Niepoprawne parametry filtrowania */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Nieoczekiwany błąd serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getCardsByIdSimilar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Do 5 najbardziej podobnych kart, duplikaty na początku */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimilarCard"][];
+                };
+            };
+            /** @description Validation Error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        success: false;
+                        error: unknown[];
+                        data: unknown;
+                    };
+                };
+            };
+            /** @description Brak karty */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Niepoprawne id */
             422: {
                 headers: {
                     [name: string]: unknown;

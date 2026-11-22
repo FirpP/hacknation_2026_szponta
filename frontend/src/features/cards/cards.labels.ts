@@ -1,4 +1,11 @@
-import type { Domain, FieldBasis, ImplementationStatus, RunStatus } from "@/lib/types/cards.types";
+import type {
+  Audience,
+  Domain,
+  FieldBasis,
+  ImplementationStatus,
+  RecommendedPath,
+  RunStatus,
+} from "@/lib/types/cards.types";
 
 export const DOMAIN_LABELS: Record<Domain, string> = {
   TECHNOLOGICAL: "Technologiczna",
@@ -18,6 +25,46 @@ export const STATUS_LABELS: Record<ImplementationStatus, string> = {
   UNKNOWN: "Brak danych",
 };
 export const STATUSES = Object.keys(STATUS_LABELS) as ImplementationStatus[];
+
+/** Ścieżki dalszego rozwoju (reguły w backend/src/analysis/recommend.ts) */
+export const PATH_LABELS: Record<RecommendedPath, { label: string; hint: string }> = {
+  COMMERCIALIZATION: {
+    label: "Komercjalizacja lub licencja",
+    hint: "Dojrzałe rozwiązanie technologiczne: sprzedaż praw, licencja, spin-off albo wdrożenie u klienta.",
+  },
+  TRANSFER: {
+    label: "Transfer do innych instytucji",
+    hint: "Rozwiązanie działa w praktyce i może zostać przejęte przez podobne szkoły, uczelnie lub urzędy.",
+  },
+  PILOT: {
+    label: "Pilotaż u partnera",
+    hint: "Prototyp lub testy: kolejny krok to wdrożenie pilotażowe w realnym środowisku.",
+  },
+  FURTHER_RND: {
+    label: "Dalsze prace B+R",
+    hint: "Wczesny etap: potrzebne dalsze badania i finansowanie B+R, zanim pojawi się wdrożenie.",
+  },
+  FIND_PARTNER: {
+    label: "Weryfikacja i szukanie partnera",
+    hint: "Za mało danych o wdrożeniu: najpierw kontakt z twórcami i partner, który pomoże ocenić rozwiązanie.",
+  },
+  NOT_APPLICABLE: {
+    label: "Brak rekomendacji",
+    hint: "Model ocenił, że rekord nie opisuje innowacji wg Oslo Manual 2018.",
+  },
+};
+export const PATHS = (Object.keys(PATH_LABELS) as RecommendedPath[]).filter((p) => p !== "NOT_APPLICABLE");
+
+/** Grupy odbiorców z doprecyzowania wyzwania (FAQ, pkt 3) */
+export const AUDIENCE_LABELS: Record<Audience, string> = {
+  INVESTORS: "Inwestorzy",
+  PUBLIC_INSTITUTIONS: "Instytucje publiczne i samorządy",
+  UNIVERSITIES: "Uczelnie i jednostki naukowe",
+  SCHOOLS: "Szkoły i placówki edukacyjne",
+  STARTUPS_COMPANIES: "Startupy i przedsiębiorstwa",
+  INNOVATORS: "Innowatorzy i wynalazcy",
+};
+export const AUDIENCES = Object.keys(AUDIENCE_LABELS) as Audience[];
 
 export const FIELD_LABELS: Record<string, string> = {
   title: "Nazwa",

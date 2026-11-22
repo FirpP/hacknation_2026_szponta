@@ -1,12 +1,15 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { isApiError } from "@/lib/api-client";
-import { useCard } from "@/features/cards/cards.hooks";
+import type { CardDetail } from "@/lib/types/cards.types";
+import { useCard, useSimilarCards } from "@/features/cards/cards.hooks";
 import BasisChip from "@/features/cards/BasisChip";
 import EvidenceList from "@/features/cards/EvidenceList";
 import ScorePips from "@/features/cards/ScorePips";
 import {
+  AUDIENCE_LABELS,
   DOMAIN_LABELS,
   FIELD_LABELS,
+  PATH_LABELS,
   STATUS_LABELS,
   formatDate,
   formatDateTime,
@@ -18,6 +21,104 @@ const SCORE_KEYS = [
   { key: "applicationPotential", field: "applicationPotentialScore" },
   { key: "credibility", field: "credibilityScore" },
 ] as const;
+
+const RecommendationBlock = ({ recommendation: rec }: { recommendation: CardDetail["recommendation"] }) => {
+  const path = PATH_LABELS[rec.path];
+  return (
+    <div className="block rec">
+      <h2>
+        Co dalej? Rekomendowana ścieżka <BasisChip basis={rec.basis} />
+      </h2>
+      <div className={`rec-path${rec.path === "NOT_APPLICABLE" ? " off" : ""}`}>
+        <b>{path.label}</b>
+        <span>{path.hint}</span>
+      </div>
+      {rec.reasons.length > 0 && rec.path !== "NOT_APPLICABLE" && (
+        <>
+          <h4>Dlaczego ta ścieżka</h4>
+          <ul>
+            {rec.reasons.map((r) => (
+              <li key={r}>{r}</li>
+            ))}
+          </ul>
+        </>
+      )}
+      {rec.audiences.length > 0 && (
+        <>
+          <h4>Do kogo skierować</h4>
+          <div className="rec-aud">
+            {rec.audiences.map((a) => (
+              <Link
+                key={a}
+                className="badge"
+                to={`/radar?audience=${a}`}
+                title="Zobacz inne karty rekomendowane tej grupie"
+              >
+                {AUDIENCE_LABELS[a]}
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
+      {rec.metrics.length > 0 && (
+        <>
+          <h4>Jak zmierzyć, że ścieżka zadziałała</h4>
+          <ul>
+            {rec.metrics.map((m) => (
+              <li key={m}>{m}</li>
+            ))}
+          </ul>
+        </>
+      )}
+      <p className="rec-note">
+        Rekomendacja wynika z jawnych reguł na polach karty (poziom wdrożenia, TRL, oceny), bez dodatkowego zapytania do
+        AI. Ten sam zestaw pól daje zawsze tę samą ścieżkę.
+      </p>
+    </div>
+  );
+};
+
+const SimilarPanel = ({ cardId }: { cardId: number }) => {
+  const { data, error, isPending } = useSimilarCards(cardId);
+  const duplicates = data?.filter((s) => s.possibleDuplicate).length ?? 0;
+  return (
+    <section className="panel" aria-labelledby="sim-h" style={{ padding: 0 }}>
+      <h3 id="sim-h">Podobne rozwiązania</h3>
+      <div className="in">
+        {error ? (
+          <span>Nie udało się pobrać podobnych kart: {error.message}</span>
+        ) : isPending ? (
+          <span>Wczytywanie…</span>
+        ) : data.length === 0 ? (
+          <span>Brak podobnych kart w bazie.</span>
+        ) : (
+          <>
+            {duplicates > 0 && (
+              <span className="badge warn">
+                {duplicates === 1 ? "1 możliwy duplikat" : `${duplicates} możliwe duplikaty`}
+              </span>
+            )}
+            <ul className="sim-list">
+              {data.map((s) => (
+                <li key={s.id}>
+                  <Link to={`/karty/${s.id}`}>{s.title}</Link>
+                  <small>
+                    {DOMAIN_LABELS[s.domain]} · {STATUS_LABELS[s.implementationStatus]} · podobieństwo{" "}
+                    {Math.round(s.score * 100)}%{s.possibleDuplicate && " · możliwy duplikat"}
+                  </small>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        <span>
+          Podobieństwo słów w nazwie, opisie i obszarze zastosowania (TF-IDF). Pomaga znaleźć podobne rozwiązania i
+          uniknąć dublowania prac.
+        </span>
+      </div>
+    </section>
+  );
+};
 
 const CardPage = () => {
   const { id } = useParams();
@@ -134,6 +235,7 @@ const CardPage = () => {
               </p>
             </div>
           )}
+          <RecommendationBlock recommendation={card.recommendation} />
           <div className="block">
             <h2>Cytaty ze źródła</h2>
             <p style={{ marginBottom: 14, fontSize: 14 }}>
@@ -165,6 +267,8 @@ const CardPage = () => {
               })}
             </div>
           </section>
+
+          <SimilarPanel cardId={card.id} />
 
           <section className="panel" aria-labelledby="src-h" style={{ padding: 0 }}>
             <h3 id="src-h">Źródło</h3>

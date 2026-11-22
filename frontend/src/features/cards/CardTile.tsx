@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import type { CardSummary } from "@/lib/types/cards.types";
-import { DOMAIN_LABELS, STATUS_LABELS, shortSourceName } from "@/features/cards/cards.labels";
+import { DOMAIN_LABELS, PATH_LABELS, STATUS_LABELS, shortSourceName } from "@/features/cards/cards.labels";
 import ScorePips from "@/features/cards/ScorePips";
 
 const CardTile = ({ card }: { card: CardSummary }) => (
@@ -14,6 +14,14 @@ const CardTile = ({ card }: { card: CardSummary }) => (
       <div className="tile-meta">
         <span className="badge solid">{STATUS_LABELS[card.implementationStatus]}</span>
         {card.isInnovation === false && <span className="badge">nie spełnia definicji innowacji</span>}
+        {card.recommendation.path !== "NOT_APPLICABLE" && (
+          <span
+            className="badge"
+            title={`Rekomendowana ścieżka (szacunek): ${PATH_LABELS[card.recommendation.path].hint}`}
+          >
+            {PATH_LABELS[card.recommendation.path].label}
+          </span>
+        )}
       </div>
       <p>{card.description}</p>
       <div className="tile-scores">

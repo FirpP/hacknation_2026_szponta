@@ -1237,6 +1237,70 @@ footer.site {
 .quote.unverified .st {
   color: var(--amber);
 }
+/* rekomendowana ścieżka i podobne karty */
+.rec h4 {
+  font-size: 13px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 16px 0 6px;
+}
+.rec ul {
+  padding-left: 20px;
+  color: var(--text2);
+  display: grid;
+  gap: 4px;
+}
+.rec-path {
+  display: grid;
+  gap: 4px;
+  border-left: 4px solid var(--green);
+  background: var(--bg-soft);
+  padding: 12px 16px;
+}
+.rec-path b {
+  color: var(--navy);
+  font-size: 18px;
+}
+.rec-path span {
+  color: var(--text2);
+  font-size: 14.5px;
+}
+.rec-path.off {
+  border-left-color: var(--muted);
+}
+.rec-aud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.rec-aud .badge:hover {
+  background: var(--blue-30);
+}
+.block p.rec-note {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.sim-list {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+.sim-list a {
+  color: var(--blue);
+  font-weight: 700;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+.sim-list small {
+  display: block;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+.panel .in > .badge {
+  justify-self: start;
+}
 .ext {
   color: var(--blue);
   font-weight: 700;

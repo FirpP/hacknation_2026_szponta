@@ -1,5 +1,15 @@
 import { useEffect, useState } from "react";
-import { DOMAIN_LABELS, DOMAINS, STATUS_LABELS, STATUSES, shortSourceName } from "@/features/cards/cards.labels";
+import {
+  AUDIENCE_LABELS,
+  AUDIENCES,
+  DOMAIN_LABELS,
+  DOMAINS,
+  PATH_LABELS,
+  PATHS,
+  STATUS_LABELS,
+  STATUSES,
+  shortSourceName,
+} from "@/features/cards/cards.labels";
 import { SORTS, type RadarFilters } from "@/features/cards/radar-params";
 
 type Props = {
@@ -80,6 +90,28 @@ const FiltersBar = ({ filters, sources, onChange }: Props) => {
         </select>
       </label>
       <div className="row2">
+        <label className="fld" title="Grupy odbiorców wyliczane regułami z poziomu wdrożenia, TRL i ocen">
+          Dla kogo
+          <select value={filters.audience ?? ""} onChange={(e) => select("audience", e.target.value)}>
+            <option value="">Wszyscy odbiorcy</option>
+            {AUDIENCES.map((a) => (
+              <option key={a} value={a}>
+                {AUDIENCE_LABELS[a]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="fld">
+          Rekomendowana ścieżka
+          <select value={filters.path ?? ""} onChange={(e) => select("path", e.target.value)}>
+            <option value="">Wszystkie</option>
+            {PATHS.map((p) => (
+              <option key={p} value={p}>
+                {PATH_LABELS[p].label}
+              </option>
+            ))}
+          </select>
+        </label>
         <div className="fld">
           TRL (szacunek)
           <span className="pair">

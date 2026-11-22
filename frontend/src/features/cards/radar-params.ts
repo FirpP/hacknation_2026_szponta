@@ -1,5 +1,12 @@
-import type { CardSort, CardsQuery, Domain, ImplementationStatus } from "@/lib/types/cards.types";
-import { DOMAINS, STATUSES } from "@/features/cards/cards.labels";
+import type {
+  Audience,
+  CardSort,
+  CardsQuery,
+  Domain,
+  ImplementationStatus,
+  RecommendedPath,
+} from "@/lib/types/cards.types";
+import { AUDIENCES, DOMAINS, PATHS, STATUSES } from "@/features/cards/cards.labels";
 
 export const SORTS: { value: CardSort; label: string }[] = [
   { value: "innovationScore", label: "Innowacyjność" },
@@ -17,6 +24,8 @@ export type RadarFilters = {
   source?: string;
   trlMin?: number;
   trlMax?: number;
+  audience?: Audience;
+  path?: RecommendedPath;
   innov: "only" | "all";
   sort: CardSort;
   page: number;
@@ -43,6 +52,8 @@ export const parseFilters = (sp: URLSearchParams): RadarFilters => {
     source: sp.get("source") || undefined,
     trlMin,
     trlMax,
+    audience: oneOf(AUDIENCES, sp.get("audience")),
+    path: oneOf(PATHS, sp.get("path")),
     innov: sp.get("innov") === "all" ? "all" : "only",
     sort:
       oneOf(
@@ -63,6 +74,8 @@ export const filtersToSearch = (f: RadarFilters): URLSearchParams => {
   if (f.source) sp.set("source", f.source);
   if (f.trlMin) sp.set("trlMin", String(f.trlMin));
   if (f.trlMax) sp.set("trlMax", String(f.trlMax));
+  if (f.audience) sp.set("audience", f.audience);
+  if (f.path) sp.set("path", f.path);
   if (f.innov === "all") sp.set("innov", "all");
   if (f.sort !== "innovationScore") sp.set("sort", f.sort);
   if (f.page > 1) sp.set("page", String(f.page));
@@ -77,6 +90,8 @@ export const filtersToQuery = (f: RadarFilters, page: number, pageSize: number):
   source: f.source,
   trlMin: f.trlMin,
   trlMax: f.trlMax,
+  audience: f.audience,
+  path: f.path,
   isInnovation: f.innov === "only" ? true : undefined,
   sort: f.sort,
   order: "desc",
@@ -85,4 +100,4 @@ export const filtersToQuery = (f: RadarFilters, page: number, pageSize: number):
 });
 
 export const hasActiveFilters = (f: RadarFilters) =>
-  Boolean(f.q || f.domain || f.status || f.source || f.trlMin || f.trlMax || f.innov === "all");
+  Boolean(f.q || f.domain || f.status || f.source || f.trlMin || f.trlMax || f.audience || f.path || f.innov === "all");

@@ -1,6 +1,6 @@
 import { keepPreviousData, useQueries, useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
-import type { CardDetail, CardsPage, CardsQuery, Domain, ScrapeRun, Stats } from "@/lib/types/cards.types";
+import type { CardDetail, CardsPage, CardsQuery, Domain, ScrapeRun, SimilarCard, Stats } from "@/lib/types/cards.types";
 import { cardsKeys } from "@/features/cards/cards.keys";
 
 const toSearch = (query: CardsQuery): string => {
@@ -48,6 +48,14 @@ export const useCard = (id: number) =>
   useQuery({
     queryKey: cardsKeys.detail(id),
     queryFn: ({ signal }) => api.get<CardDetail>(`/cards/${id}`, signal),
+    enabled: Number.isInteger(id) && id > 0,
+  });
+
+/** Podobne karty i możliwe duplikaty (TF-IDF w backendzie) */
+export const useSimilarCards = (id: number) =>
+  useQuery({
+    queryKey: cardsKeys.similar(id),
+    queryFn: ({ signal }) => api.get<SimilarCard[]>(`/cards/${id}/similar`, signal),
     enabled: Number.isInteger(id) && id > 0,
   });
 
