@@ -25,7 +25,7 @@ docker compose --profile dev up --build   # lub: bun run docker:dev
 - Frontend (Vite, hot reload): http://localhost:8080 (zapytania do `/api` idą przez proxy Vite do backendu)
 - Backend: http://localhost:3000
 - Backend i frontend to osobne kontenery (`backend-dev` i `frontend-dev`), więc mają osobne logi: `docker compose --profile dev logs -f backend-dev` lub `frontend-dev` (w Docker Desktop kliknij kontener w grupie o nazwie projektu). Backend loguje każde żądanie (metoda, ścieżka, status, czas); błędy 4xx to jedna linia, 5xx ze stackiem.
-- Przy starcie każdy kontener instaluje nowe paczki, a backend dodatkowo generuje klienta Prisma i stosuje migracje.
+- Przy starcie każdy kontener instaluje nowe paczki, a backend dodatkowo generuje klienta Prisma, wgrywa snapshot do pustej bazy i stosuje migracje.
 
 Zmienne środowiskowe są opcjonalne (analiza LLM potrzebuje `LLM_*`). Jeśli chcesz coś nadpisać: `cp .env.example .env` (po utworzeniu `.env` uruchom kontenery ponownie, bo Docker czyta go przy tworzeniu kontenera).
 
@@ -35,15 +35,17 @@ Prisma (z katalogu głównego, polecenia wykonują się w kontenerze `backend-de
 bun run dev:prisma:migrate   # nowa migracja po zmianie schema.prisma
 bun run dev:prisma:generate  # klient Prisma po zmianie schema.prisma (bez restartu kontenera)
 bun run dev:prisma:studio    # podgląd i edycja danych: http://localhost:5555 (Ctrl+C kończy)
-bun run dev:db:snapshot      # kopia bazy do backend/data/dev-snapshot.db (do otwarcia w VS Code/DBeaver)
-bun run dev:db:restore       # wgranie backend/data/dev-snapshot.db (albo podanego pliku) z powrotem do bazy w Dockerze
+bun run db:snapshot          # zapis działającej bazy (dev, a bez dev prod) do backend/data/snapshot.db; argument: dev|prod
 ```
 
-**Przeniesienie gotowej bazy bez ponownego scrapowania** (np. na inny komputer albo na produkcję): `dev:db:snapshot` na źródłowej maszynie, skopiuj plik `backend/data/dev-snapshot.db`, potem na docelowej przy działającym profilu `bun run dev:db:restore` (dev) albo `bun run prod:db:restore data/dev-snapshot.db` (prod; ścieżka względem `backend/`). Skrypt `backend/scripts/db-restore.sh` sprawdza plik (integralność, tabele Radaru), robi kopię obecnej bazy w wolumenie (`<db>.before-restore-<data>.db`), na chwilę zatrzymuje backend, podmienia bazę razem z usunięciem starych plików `-wal`/`-shm` i uruchamia backend, który stosuje brakujące migracje. Odmawia, gdy trwa scrape lub analiza (`radar.lock`).
+**Baza startowa (snapshot) wgrywa się sama.** W repo jest jeden plik `backend/data/snapshot.db`, wspólny dla dev i prod. Trafia do obrazu przy buildzie (`/app/seed/snapshot.db`), a przy każdym starcie kontenera `bun run db:restore` (`backend/src/db/restore-snapshot.ts`) wgrywa go do bazy **tylko wtedy, gdy baza nie istnieje albo jest pusta** (zero rekordów w `ScrapeRun`, `RawRecord`, `InnovationCard`). Baza z danymi nigdy nie jest nadpisywana. Plik jest sprawdzany przed wgraniem (integralność, tabele Radaru), potem startuje `prisma migrate deploy`, który stosuje brakujące migracje. Uszkodzony snapshot przerywa start z komunikatem, a brak snapshotu daje pustą bazę.
+
+- **Nowy snapshot:** `bun run db:snapshot` (wybiera działający kontener, albo podaj `bun run db:snapshot prod`) nadpisuje `backend/data/snapshot.db` aktualną bazą z kontenera. Snapshot jest wgrywany do obrazu, więc po zmianie przebuduj: `docker compose --profile dev up --build`.
+- **Wgranie snapshotu od nowa** (np. po zepsuciu bazy dev): usuń wolumen z bazą i uruchom ponownie. `docker compose --profile dev down -v` kasuje wolumeny dev (baza i `node_modules`, te drugie `bun install` odtworzy). Na produkcji `docker compose --profile prod down -v` **kasuje bazę produkcyjną**, więc zrób najpierw backup (niżej).
 
 **Baza dev leży w wolumenie Dockera** (`/app/backend/data/dev.db` w kontenerze), a nie w katalogu repo. **Nie otwieraj jej z hosta na żywo.** Przy Docker Desktop kontener działa w VM, a SQLite w trybie WAL wymaga pamięci współdzielonej i blokad plików między wszystkimi procesami. Podgląd z hosta (np. rozszerzenie SQLite w VS Code) widziałby wtedy stare dane i mógłby cofnąć zapisy aplikacji. Do przeglądania służy Prisma Studio uruchamiane w kontenerze albo migawka. Zmiany w migawce nie wracają do bazy.
 
-Na świeżym klonie wystarczy `docker compose --profile dev up --build`, bo przy każdym starcie backend sam generuje klienta Prisma i stosuje istniejące migracje. Baza jest wtedy pusta: karty wgrasz z migawki w repo przez `bun run dev:db:restore`.
+Na świeżym klonie wystarczy `docker compose --profile dev up --build`, bo przy każdym starcie backend sam generuje klienta Prisma i stosuje istniejące migracje. Baza startowa z `backend/data/snapshot.db` wgrywa się przy pierwszym starcie sama (patrz wyżej), więc karty są od razu.
 
 Błędy Prismy nie wymagają obsługi w serwisach: `errorHandler` zamienia duplikat pola `@unique` (P2002) na 409 `CONFLICT` z polem w `details`, a brak rekordu przy update/delete (P2025) na 404.
 
@@ -67,13 +69,14 @@ Pipeline działa tak: scraper → `RawRecord` (surowy fragment źródła, `conte
 
 ```sh
 bun run db:migrate                 # migracje (ScrapeRun, RawRecord, InnovationCard)
-bun run dev:db:restore             # gotowe karty z migawki backend/data/dev-snapshot.db, bez scrapowania i LLM
 bun run scrape:ncbr --limit 5      # jedno źródło (ncbr|baztol|epo|uprp|ppm|pbn|pan|interreg), --offline = fixture
 bun run scrape:all                 # wszystkie źródła, tabela statusów
 bun run analyze --limit 3          # karty dla nowych/zmienionych rekordów (--source ncbr, --retry-failed)
 bun run pipeline                   # scrape:all + analyze pod jednym lockiem
-bun run cron                       # harmonogram co 24 h (RADAR_CRON), --now = pierwszy run od razu; w tle: cron:detached
+bun run cron --now                 # ręczny harmonogram w osobnym procesie; zwykle zbędny (patrz niżej), --now = run od razu
 ```
+
+- **Automatyczny harmonogram:** serwer API (dev i prod) sam planuje pipeline (`scrape:all` + analiza) codziennie o **03:00 czasu polskiego** i niczego nie trzeba uruchamiać ręcznie. Termin ustawia `RADAR_CRON` (domyślnie `0 3 * * *`), strefę `RADAR_TZ` (domyślnie `Europe/Warsaw`, bo kontener działa w UTC), a `RADAR_CRON_ENABLED=false` go wyłącza. Kod: [backend/src/pipeline/scheduler.ts](backend/src/pipeline/scheduler.ts), start w `src/index.ts`. Działa w procesie API, a nie w osobnym kontenerze, bo baza SQLite nie powinna być otwierana z dwóch kontenerów naraz. Nakładanie się runów blokuje lock (`radar.lock`), więc ręczne `bun run pipeline` w trakcie nocnego runu odmówi, a nocny run pominie termin, gdy ręczny jeszcze trwa. Bez kluczy `LLM_*` run tylko pobiera dane, a analizę pomija. Termin i strefę znajdziesz w logu startowym backendu (`⏰ Harmonogram Radaru: ..., następny run: ...`). Błędne `RADAR_CRON` lub `RADAR_TZ` przerywa start serwera.
 
 - **Konfiguracja:** zapytania, słowa kluczowe, limity (domyślnie 20 na źródło) i opóźnienia są w [backend/src/radar.config.ts](backend/src/radar.config.ts), a klucze w `.env` (patrz `.env.example`: `LLM_*`, `EPO_OPS_*`).
 - **Grzeczny crawler:** robots.txt respektowany ściśle (Disallow lub brak dostępu => `SKIPPED`), własny User-Agent, min. 1 s między requestami do hosta (lub `Crawl-delay`), timeout 20 s, 3 próby z backoffem.
@@ -105,10 +108,7 @@ Produkcja to profil `prod`: Nginx na porcie 80 serwuje zbudowany frontend i prze
    ```sh
    docker compose --profile prod up -d --build
    ```
-5. Wgraj karty z migawki w repo (bez scrapowania i kosztów LLM; potrzebny Bun na serwerze, inaczej patrz `backend/scripts/db-restore.sh`):
-   ```sh
-   bun run prod:db:restore data/dev-snapshot.db
-   ```
+5. Karty z `backend/data/snapshot.db` wgrają się same przy pierwszym starcie (pusty wolumen), bez scrapowania i kosztów LLM. Nic nie musisz uruchamiać.
 6. Firewall:
    ```sh
    ufw allow OpenSSH && ufw allow 80 && ufw enable
@@ -122,7 +122,7 @@ Aplikacja działa pod `http://<IP-Dropletu>`.
 
 Konfiguracja Nginx jest w `nginx/default.conf`. Po jej zmianie wystarczy `docker compose --profile prod restart web`, bez przebudowy obrazu.
 
-Podgląd bazy produkcyjnej w kliencie SQLite: baza leży w wolumenie Dockera, więc skrypt `backend/scripts/db-snapshot.sh` (`bun run prod:db:snapshot`, a w dev `bun run dev:db:snapshot`) zapisuje jej spójną migawkę do `backend/data/prod-snapshot.db` (katalog jest w `.gitignore`). Migawka się nie odświeża, uruchom skrypt ponownie po zmianach. Wymaga działającego profilu `prod`.
+Podgląd bazy produkcyjnej w kliencie SQLite: baza leży w wolumenie Dockera, więc skrypt `backend/scripts/db-snapshot.sh` (`bun run db:snapshot prod`) zapisuje jej spójną migawkę do `backend/data/snapshot.db`. To ten sam plik, z którego startują nowe bazy dev i prod, więc nie commituj migawki z produkcji, jeśli nie chcesz, żeby stała się nową bazą startową. Migawka się nie odświeża, uruchom skrypt ponownie po zmianach. Wymaga działającego profilu `prod`.
 
 Backup bazy (z katalogu repo, przy działającym profilu `prod`):
 
