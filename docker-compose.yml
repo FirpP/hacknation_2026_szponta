@@ -23,6 +23,9 @@ services:
     environment:
       NODE_ENV: development
       DATABASE_URL: file:/app/backend/data/dev.db
+      # Harmonogram per profil (environment wygrywa z env_file), żeby jedno ustawienie w .env nie wyłączało produkcji.
+      # Dev domyślnie bez harmonogramu, żeby laptop nie wołał źródeł i LLM o 3 w nocy. Włączysz: RADAR_CRON_ENABLED_DEV=true w .env
+      RADAR_CRON_ENABLED: ${RADAR_CRON_ENABLED_DEV:-false}
     volumes:
       - ./backend:/app/backend
       - dev_backend_node_modules:/app/backend/node_modules
@@ -58,6 +61,8 @@ services:
     environment:
       NODE_ENV: production
       DATABASE_URL: file:/app/backend/data/prod.db
+      # Produkcja domyślnie odświeża bazę sama (codziennie 03:00). Wyłączysz: RADAR_CRON_ENABLED_PROD=false w .env
+      RADAR_CRON_ENABLED: ${RADAR_CRON_ENABLED_PROD:-true}
     mem_limit: 512m
     # bun zamiast curl, bo curl może nie być w obrazie oven/bun
     healthcheck:
