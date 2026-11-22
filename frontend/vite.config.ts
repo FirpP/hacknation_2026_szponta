@@ -33,7 +33,6 @@ export default defineConfig(({ mode }) => {
         "/api": {
           target: env.VITE_PROXY_TARGET || "http://localhost:3000",
           changeOrigin: true,
-          ws: true, // WebSockety pod /api też idą przez proxy
           configure: (proxy) => {
             proxy.on("error", (err, req) => {
               console.warn("[Vite proxy] API request failed:", req.url, err.message);

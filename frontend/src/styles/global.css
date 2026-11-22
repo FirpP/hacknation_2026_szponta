@@ -1243,54 +1243,6 @@ footer.site {
   text-decoration: underline;
 }
 
-/* stare formularze templatki (logowanie) */
-.form {
-  display: grid;
-  gap: 1rem;
-  max-width: 360px;
-}
-.field {
-  display: grid;
-  gap: 0.25rem;
-}
-.input {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #c6ccd3;
-  font: inherit;
-  &[aria-invalid="true"] {
-    border-color: var(--red);
-  }
-}
-.error {
-  margin: 0;
-  color: var(--red);
-}
-.button {
-  display: inline-flex;
-  justify-self: start;
-  background: var(--blue);
-  color: #fff;
-  font-weight: 700;
-  padding: 10px 20px;
-  border: 2px solid var(--blue);
-  cursor: pointer;
-  &:hover {
-    background: var(--navy);
-  }
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-.button--secondary {
-  background: #fff;
-  color: var(--blue);
-}
-.button--danger {
-  background: var(--red);
-  border-color: var(--red);
-}
-
 @media (max-width: 1000px) {
   .cards,
   .src-grid {

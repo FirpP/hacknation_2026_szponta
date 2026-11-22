@@ -1,6 +1,6 @@
 import type { CardsQuery } from "@/lib/types/cards.types";
 
-// Klucze zapytań w jednym miejscu (wzorzec jak auth.keys.ts)
+// Klucze zapytań w jednym miejscu: te same w hookach i przy unieważnianiu cache
 export const cardsKeys = {
   all: ["cards"] as const,
   list: (query: CardsQuery) => ["cards", "list", query] as const,
