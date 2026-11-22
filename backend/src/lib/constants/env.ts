@@ -1,3 +1,4 @@
+import cron from "node-cron";
 import { z } from "zod";
 import type { ApplicationEnvironment } from "@lib/types/env.types";
 
@@ -20,7 +21,32 @@ const envSchema = z.object({
   EPO_OPS_SECRET: z.string().min(1).optional(),
   PBN_APP_ID: z.string().min(1).optional(),
   PBN_APP_TOKEN: z.string().min(1).optional(),
-  RADAR_CRON: z.string().min(1).default("0 3 * * *"),
+  // Harmonogram pipeline'u (scrape + analiza), uruchamiany razem z serwerem. Błędne wartości przerywają start,
+  // bo po cichu wyłączony harmonogram oznaczałby bazę, która przestała się aktualizować.
+  RADAR_CRON: z
+    .string()
+    .min(1)
+    .default("0 3 * * *")
+    .refine((v) => cron.validate(v), { message: "Niepoprawne wyrażenie cron" }),
+  RADAR_TZ: z
+    .string()
+    .min(1)
+    .default("Europe/Warsaw")
+    .refine(
+      (tz) => {
+        try {
+          new Intl.DateTimeFormat("pl-PL", { timeZone: tz });
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      { message: "Nieznana strefa czasowa (np. Europe/Warsaw)" },
+    ),
+  RADAR_CRON_ENABLED: z.preprocess(
+    (v) => (v === undefined || v === "" ? true : !["false", "0"].includes(String(v).toLowerCase())),
+    z.boolean(),
+  ),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -48,4 +74,6 @@ export const ENV: ApplicationEnvironment = {
   PBN_APP_ID: parsed.data.PBN_APP_ID,
   PBN_APP_TOKEN: parsed.data.PBN_APP_TOKEN,
   RADAR_CRON: parsed.data.RADAR_CRON,
+  RADAR_TZ: parsed.data.RADAR_TZ,
+  RADAR_CRON_ENABLED: parsed.data.RADAR_CRON_ENABLED,
 } as const;

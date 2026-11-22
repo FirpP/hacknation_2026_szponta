@@ -18,4 +18,6 @@ export type ApplicationEnvironment = {
   PBN_APP_ID: string | undefined;
   PBN_APP_TOKEN: string | undefined;
   RADAR_CRON: string;
+  RADAR_TZ: string;
+  RADAR_CRON_ENABLED: boolean;
 };

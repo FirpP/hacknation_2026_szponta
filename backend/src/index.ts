@@ -5,6 +5,7 @@ import { errorHandler } from "@middleware/error-handler";
 
 import router from "./api/root";
 import { PathNotFoundError } from "./lib/errors/app-errors";
+import { startScheduler } from "./pipeline/scheduler";
 
 const app = new Hono({
   strict: false, // wyłączenie strict mode, aby nie wymuszać trailing slash w URL
@@ -20,6 +21,10 @@ const requestLogger = logger();
 app.use((c, next) => (c.req.path === "/health" ? next() : requestLogger(c, next)));
 
 app.route("/", router);
+
+// Codzienny pipeline (scrape + analiza) startuje razem z serwerem, bez ręcznego uruchamiania skryptów.
+// W procesie API, bo baza SQLite nie powinna być otwierana z dwóch kontenerów naraz.
+if (ENV.RADAR_CRON_ENABLED) startScheduler();
 
 export default {
   port: ENV.PORT,
