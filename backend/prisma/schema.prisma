@@ -9,13 +9,6 @@ datasource db {
   provider = "sqlite"
 }
 
-model Employee {
-  id           String   @id @default(uuid())
-  username     String   @unique
-  passwordHash String
-  createdAt    DateTime @default(now())
-}
-
 // ===================== Radar Innowacji =====================
 // Pipeline: scraper -> RawRecord (surowe dane) -> analiza LLM -> InnovationCard (karta dla strony).
 
@@ -89,7 +82,7 @@ model RawRecord {
   @@index([runId])
 }
 
-/// Karta innowacji wygenerowana przez LLM (lub seed demo) z jednego RawRecord
+/// Karta innowacji wygenerowana przez LLM z jednego RawRecord
 model InnovationCard {
   id                            Int                  @id @default(autoincrement())
   rawRecordId                   Int                  @unique

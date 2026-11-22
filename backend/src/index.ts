@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { logger } from "hono/logger";
-import { corsMiddleware } from "./middleware/cors";
 import { ENV } from "@lib/constants/env";
 import { errorHandler } from "@middleware/error-handler";
 
@@ -19,7 +18,6 @@ app.notFound((c) => c.json(new PathNotFoundError(`Nie ma trasy ${c.req.method} $
 // Logger requestów jest wyłączony dla /health, aby nie zaśmiecać logów, bo healthcheck jest odpytany co 10 sekund
 const requestLogger = logger();
 app.use((c, next) => (c.req.path === "/health" ? next() : requestLogger(c, next)));
-app.use(corsMiddleware);
 
 app.route("/", router);
 

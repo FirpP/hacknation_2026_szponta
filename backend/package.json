@@ -10,14 +10,11 @@
     "test": "bun test $(find src -type f -name '*.test.ts')",
     "dev:prisma:generate": "docker compose --profile dev exec backend-dev sh -c \"bunx --bun prisma generate\"",
     "dev:prisma:migrate": "docker compose --profile dev exec backend-dev sh -c \"bunx --bun prisma migrate dev\"",
-    "dev:prisma:seed": "docker compose --profile dev exec backend-dev sh -c \"bunx --bun prisma db seed\"",
     "dev:prisma:studio": "docker compose --profile dev exec backend-dev bun scripts/studio.ts",
     "dev:db:snapshot": "sh scripts/db-snapshot.sh dev",
     "dev:db:restore": "sh scripts/db-restore.sh dev",
     "prod:db:snapshot": "sh scripts/db-snapshot.sh prod",
     "prod:db:restore": "sh scripts/db-restore.sh prod",
-    "prod:employee": "docker compose --profile prod exec backend bun prisma/seed/seed-employee.ts",
-    "new:module": "bun scripts/new-module.ts",
     "check:circular": "dpdm --circular --no-warning --no-tree --exclude 'prisma/generated' --exit-code circular:1 src/index.ts",
     "scrape:ncbr": "bun src/scrapers/ncbr.ts",
     "scrape:ppm": "bun src/scrapers/ppm.ts",
@@ -31,11 +28,9 @@
     "analyze": "bun src/analysis/analyze.ts",
     "pipeline": "bun src/pipeline/pipeline.ts",
     "cron": "bun src/pipeline/cron.ts",
-    "db:migrate": "bunx --bun prisma migrate dev",
-    "db:seed-demo": "bun prisma/seed/seed-demo.ts"
+    "db:migrate": "bunx --bun prisma migrate dev"
   },
   "dependencies": {
-    "@hono/bun": "1.0.1",
     "@hono/standard-validator": "0.4.0",
     "@hono/swagger-ui": "0.6.1",
     "@prisma/client": "7.10.1",

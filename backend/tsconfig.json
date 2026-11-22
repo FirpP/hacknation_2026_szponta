@@ -40,6 +40,6 @@
     }
   },
 
-  "include": ["src/**/*", "scripts/**/*.ts", "prisma.config.ts", "prisma/seed/**/*.ts"],
+  "include": ["src/**/*", "scripts/**/*.ts", "prisma.config.ts"],
   "exclude": ["dist", "node_modules", ".next"]
 }

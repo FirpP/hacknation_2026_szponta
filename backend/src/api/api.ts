@@ -3,15 +3,11 @@ import { openAPIRouteHandler } from "hono-openapi";
 import { swaggerUI } from "@hono/swagger-ui";
 import { ENV } from "@lib/constants/env";
 
-import authRouter from "@api/auth/routes/auth.routes";
-import panelRouter from "@api/panel/routes/panel.routes";
 import { cardsRouter, runsRouter, statsRouter } from "@api/cards/routes/cards.routes";
 
 // /api/v1
 export const router = new Hono();
 
-router.route("/auth", authRouter);
-router.route("/panel", panelRouter);
 router.route("/cards", cardsRouter);
 router.route("/runs", runsRouter);
 router.route("/stats", statsRouter);
@@ -23,13 +19,8 @@ if (ENV.NODE_ENV !== "production") {
     openAPIRouteHandler(router, {
       documentation: {
         info: {
-          title: "Hacknation 2026 API",
+          title: "Radar Innowacji API",
           version: "1.0.0",
-        },
-        components: {
-          securitySchemes: {
-            cookieAuth: { type: "apiKey", in: "cookie", name: "session" },
-          },
         },
         servers: [
           {

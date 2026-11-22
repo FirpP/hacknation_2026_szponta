@@ -30,21 +30,6 @@ export class NotFoundError extends AppError {
   }
 }
 
-export class UnauthorizedError extends AppError {
-  constructor(message = "Brak autoryzacji.") {
-    super(message, 401, "UNAUTHORIZED");
-  }
-}
-
-export class TooManyRequestsError extends AppError {
-  constructor(
-    message: string,
-    public readonly retryAfterSeconds: number,
-  ) {
-    super(message, 429, "TOO_MANY_REQUESTS");
-  }
-}
-
 export class ConflictError extends AppError {
   constructor(message: string, details?: ValidationIssue[]) {
     super(message, 409, "CONFLICT", details);

@@ -36,7 +36,7 @@ const detail: CardDetail = {
     firstSeenAt: "2026-11-21T00:00:00.000Z",
     fetchedAt: "2026-11-21T00:00:00.000Z",
   },
-  analysis: { model: "seed-demo", promptVersion: "seed-v1" },
+  analysis: { model: "deepseek-flash", promptVersion: "card-v2" },
   analyzedAt: "2026-11-21T00:00:00.000Z",
 };
 

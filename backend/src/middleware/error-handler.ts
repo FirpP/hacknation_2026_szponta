@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { ZodError } from "zod";
-import { AppError, TooManyRequestsError, ValidationError } from "@lib/errors/app-errors";
+import { AppError, ValidationError } from "@lib/errors/app-errors";
 import { mapPrismaError } from "@lib/errors/prisma-errors";
 
 const getCurrentTimestamp = () => new Date().toISOString();
@@ -16,9 +16,6 @@ const HTTP_EXCEPTION_CODES: Record<number, string> = {
 };
 
 const respond = (c: Context, err: AppError) => {
-  if (err instanceof TooManyRequestsError) {
-    c.header("Retry-After", String(err.retryAfterSeconds));
-  }
   // 4xx to oczekiwane błędy klienta: jedna linia bez stacka, żeby nie zagłuszały prawdziwych 500
   if (err.statusCode >= 500) {
     console.error(`[${getCurrentTimestamp()}] [${err.name}] ${c.req.method} ${c.req.path}:`, err.message, err.stack);
