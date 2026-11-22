@@ -55,6 +55,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/cards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lista kart innowacji z filtrami (tylko odczyt) */
+        get: operations["getCards"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cards/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Pełna karta innowacji: cytaty, pochodzenie pól, źródło */
+        get: operations["getCardsById"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ostatnie uruchomienia scraperów (świeżość bazy) */
+        get: operations["getRuns"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Podsumowanie bazy: liczby kart wg obszaru, statusu i źródła, odsetek zweryfikowanych cytatów */
+        get: operations["getStats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -79,6 +147,149 @@ export interface components {
             /** Format: uuid */
             id: string;
             username: string;
+        };
+        /** @description Karta innowacji (lista) */
+        CardSummary: {
+            id: number;
+            title: string;
+            description: string;
+            applicationArea: string | null;
+            /** @enum {string} */
+            domain: "TECHNOLOGICAL" | "EDUCATIONAL" | "ADMINISTRATIVE" | "OTHER";
+            isInnovation: boolean | null;
+            /** @enum {string} */
+            implementationStatus: "CONCEPT" | "PROTOTYPE" | "TESTING" | "PILOT" | "IN_USE" | "UNKNOWN";
+            trl: number | null;
+            scores: {
+                innovation: {
+                    score: number;
+                    rationale: string;
+                };
+                applicationPotential: {
+                    score: number;
+                    rationale: string;
+                };
+                credibility: {
+                    score: number;
+                    rationale: string;
+                };
+            };
+            /** @description CONFIRMED = wprost w źródle, ESTIMATED = szacunek */
+            fieldBasis: {
+                [key: string]: "CONFIRMED" | "ESTIMATED";
+            };
+            source: {
+                id: string;
+                name: string;
+                url: string;
+            };
+            /** Format: date-time */
+            analyzedAt: string;
+        };
+        CardsPage: {
+            items: components["schemas"]["CardSummary"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        Evidence: {
+            field: string;
+            quote: string;
+            /** @description Czy cytat występuje w surowym rekordzie (sprawdzane automatycznie) */
+            verified: boolean;
+        };
+        /** @description Pełna karta innowacji ze źródłami i cytatami */
+        CardDetail: {
+            id: number;
+            title: string;
+            description: string;
+            applicationArea: string | null;
+            /** @enum {string} */
+            domain: "TECHNOLOGICAL" | "EDUCATIONAL" | "ADMINISTRATIVE" | "OTHER";
+            isInnovation: boolean | null;
+            /** @enum {string} */
+            implementationStatus: "CONCEPT" | "PROTOTYPE" | "TESTING" | "PILOT" | "IN_USE" | "UNKNOWN";
+            trl: number | null;
+            scores: {
+                innovation: {
+                    score: number;
+                    rationale: string;
+                };
+                applicationPotential: {
+                    score: number;
+                    rationale: string;
+                };
+                credibility: {
+                    score: number;
+                    rationale: string;
+                };
+            };
+            /** @description CONFIRMED = wprost w źródle, ESTIMATED = szacunek */
+            fieldBasis: {
+                [key: string]: "CONFIRMED" | "ESTIMATED";
+            };
+            source: {
+                id: string;
+                name: string;
+                url: string;
+                /** Format: date-time */
+                firstSeenAt: string;
+                /** Format: date-time */
+                fetchedAt: string;
+            };
+            /** Format: date-time */
+            analyzedAt: string;
+            isInnovationRationale: string | null;
+            evidence: components["schemas"]["Evidence"][];
+            analysis: {
+                model: string;
+                promptVersion: string;
+            };
+        };
+        /** @description Uruchomienie scrapera */
+        ScrapeRun: {
+            id: number;
+            source: string;
+            /** @enum {string} */
+            status: "RUNNING" | "SUCCESS" | "PARTIAL" | "FAILED" | "SKIPPED";
+            /** Format: date-time */
+            startedAt: string;
+            finishedAt: string | null;
+            itemsFetched: number;
+            itemsNew: number;
+            itemsChanged: number;
+            error: string | null;
+        };
+        /** @description Podsumowanie bazy kart */
+        Stats: {
+            totalCards: number;
+            /** @description Karty z isInnovation = true (szacunek modelu) */
+            innovations: number;
+            byDomain: {
+                TECHNOLOGICAL: number;
+                EDUCATIONAL: number;
+                ADMINISTRATIVE: number;
+                OTHER: number;
+            };
+            byStatus: {
+                CONCEPT: number;
+                PROTOTYPE: number;
+                TESTING: number;
+                PILOT: number;
+                IN_USE: number;
+                UNKNOWN: number;
+            };
+            sources: {
+                id: string;
+                name: string;
+                cards: number;
+            }[];
+            evidence: {
+                total: number;
+                verified: number;
+            };
+            /** @description Ostatnie pobranie rekordu ze źródła */
+            lastFetchedAt: string | null;
         };
     };
     responses: never;
@@ -213,6 +424,221 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Nieoczekiwany błąd serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getCards: {
+        parameters: {
+            query?: {
+                /** @description Fraza w tytule, opisie lub obszarze zastosowania */
+                q?: string;
+                domain?: "TECHNOLOGICAL" | "EDUCATIONAL" | "ADMINISTRATIVE" | "OTHER";
+                /** @description Poziom wdrożenia */
+                status?: "CONCEPT" | "PROTOTYPE" | "TESTING" | "PILOT" | "IN_USE" | "UNKNOWN";
+                /** @description Identyfikator źródła, np. ncbr */
+                source?: string;
+                trlMin?: number;
+                trlMax?: number;
+                /** @description Czy rekord jest innowacją wg Oslo Manual (szacunek modelu) */
+                isInnovation?: "true" | "false";
+                sort?: "analyzedAt" | "innovationScore" | "applicationPotentialScore" | "credibilityScore" | "trl";
+                order?: "asc" | "desc";
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Strona kart */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CardsPage"];
+                };
+            };
+            /** @description Validation Error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        success: false;
+                        error: unknown[];
+                        data: unknown;
+                    };
+                };
+            };
+            /** @description Niepoprawne parametry filtrowania */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Nieoczekiwany błąd serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getCardsById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Karta */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CardDetail"];
+                };
+            };
+            /** @description Validation Error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        success: false;
+                        error: unknown[];
+                        data: unknown;
+                    };
+                };
+            };
+            /** @description Brak karty */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Niepoprawne id */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Nieoczekiwany błąd serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getRuns: {
+        parameters: {
+            query?: {
+                source?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Lista runów, od najnowszego */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScrapeRun"][];
+                };
+            };
+            /** @description Validation Error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        success: false;
+                        error: unknown[];
+                        data: unknown;
+                    };
+                };
+            };
+            /** @description Niepoprawne parametry */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Nieoczekiwany błąd serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getStats: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Statystyki */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Stats"];
                 };
             };
             /** @description Nieoczekiwany błąd serwera */

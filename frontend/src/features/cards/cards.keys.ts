@@ -1,0 +1,10 @@
+import type { CardsQuery } from "@/lib/types/cards.types";
+
+// Klucze zapytań w jednym miejscu (wzorzec jak auth.keys.ts)
+export const cardsKeys = {
+  all: ["cards"] as const,
+  list: (query: CardsQuery) => ["cards", "list", query] as const,
+  detail: (id: number) => ["cards", "detail", id] as const,
+  stats: ["stats"] as const,
+  runs: ["runs"] as const,
+};
