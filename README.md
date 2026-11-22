@@ -4,6 +4,8 @@ Prototyp na wyzwanie Podkarpackiego Centrum Innowacji (HackNation 2026). Robot z
 
 Backend: Hono + Prisma + SQLite (`backend/`). Frontend: React + Vite (`frontend/`). Całość działa w Dockerze.
 
+UWAGA: prezentacja oraz filmik demonstracyjny znajduję się w folderze demo
+
 ## Wymagania
 
 - Docker z Docker Compose v2
